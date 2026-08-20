@@ -44,6 +44,7 @@ SOFTWARE.
 #include "string.h"
 #include <stdio.h>
 #include "tm_stm32f4_stmpe811.h"
+#include "ui.h"
 
 #define LCD_WIDTH   320
 #define LCD_HEIGHT  240
@@ -57,7 +58,13 @@ static lv_color_t buf1[LCD_WIDTH * 20];
 static char buffer[50];
 lv_obj_t *title;
 
-
+TM_STMPE811_TouchData touchData;
+void USART1_SendString(const char* str){
+	while(*str){
+		while(USART_GetFlagStatus(USART1, USART_FLAG_TXE) == RESET);
+		USART_SendData(USART1, *str++);
+	}
+}
 static void my_flush_cb(
     lv_display_t *display,
     const lv_area_t *area,
@@ -67,12 +74,39 @@ static void my_flush_cb(
 
     lv_display_flush_ready(display);
 }
+void my_touchpad_read(lv_indev_t * indev, lv_indev_data_t * data)
+{
+    char msg[50];
+
+    if (TM_STMPE811_ReadTouch(&touchData) == TM_STMPE811_State_Pressed)
+    {
+        data->state = LV_INDEV_STATE_PRESSED;
+
+        data->point.x = touchData.y;
+        data->point.y = 240 - touchData.x;
+
+        sprintf(
+            msg,
+            "Touch X=%d Y=%d\r\n",
+            data->point.x,
+            data->point.y
+        );
+
+        USART1_SendString(msg);
+    }
+    else
+    {
+        data->state = LV_INDEV_STATE_RELEASED;
+    }
+}
+
 static void switch_to_main(lv_timer_t *timer)
 {
-    lv_label_set_text(title, "Main");
+	_ui_screen_change(&ui_Screen2, LV_SCR_LOAD_ANIM_FADE_ON, 500, 0, &ui_Screen2_screen_init);
 
     lv_timer_del(timer);
 }
+
 
 void USART1_Init(void) {
 	GPIO_InitTypeDef GPIO_InitStruct;
@@ -101,12 +135,7 @@ void USART1_Init(void) {
 
 	USART_Cmd(USART1, ENABLE);
 }
-void USART1_SendString(const char* str){
-	while(*str){
-		while(USART_GetFlagStatus(USART1, USART_FLAG_TXE) == RESET);
-		USART_SendData(USART1, *str++);
-	}
-}
+
 
 void GPIO_obLED_Init(){
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOG, ENABLE);
@@ -225,28 +254,67 @@ void splash_screen(){
 
 int main(void)
 {
-	USART1_Init();
-	USART1_SendString("USART Initialize Success!\n\r");
+    USART1_Init();
 
-	USART1_SendString("Initializing other component...\n\r");
-	TM_ILI9341_Init();
-	lv_init();
-	GPIO_obLED_Init();
-	TIM_TIMER_Init();
-	TIM_NVIC_Config();
-	TM_STMPE811_TouchData touchData;
+    USART1_SendString("USART Initialize Success!\r\n");
 
-	USART1_SendString("Initialization Finish!\n\r");
-	splash_screen();
-	TIM_Cmd(TIM3, ENABLE);
-	lv_timer_create(switch_to_main, 5000, NULL);
+    TM_ILI9341_Init();
 
-	while (1)
-	{
-		lv_timer_handler();
-	}
+    lv_init();
 
+    GPIO_obLED_Init();
 
+    TIM_TIMER_Init();
+    TIM_NVIC_Config();
+
+    TM_STMPE811_Init();
+
+    USART1_SendString("Initialization Finish!\r\n");
+
+    TM_ILI9341_Rotate(TM_ILI9341_Orientation_Landscape_1);
+
+    lv_display_t *display = lv_display_create(320, 240);
+
+    lv_display_set_buffers(
+        display,
+        buf1,
+        NULL,
+        sizeof(buf1),
+        LV_DISPLAY_RENDER_MODE_PARTIAL
+    );
+
+    lv_display_set_flush_cb(
+        display,
+        my_flush_cb
+    );
+
+    /* Create LVGL touch input device */
+    lv_indev_t *indev = lv_indev_create();
+
+    lv_indev_set_type(
+        indev,
+        LV_INDEV_TYPE_POINTER
+    );
+
+    lv_indev_set_read_cb(
+        indev,
+        my_touchpad_read
+    );
+
+    ui_init();
+
+    TIM_Cmd(TIM3, ENABLE);
+
+    lv_timer_create(
+        switch_to_main,
+        5000,
+        NULL
+    );
+
+    while (1)
+    {
+        lv_timer_handler();
+    }
 }
 
 /*
