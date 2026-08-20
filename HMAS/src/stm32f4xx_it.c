@@ -29,6 +29,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_it.h"
+#include "lvgl.h"
 
 /** @addtogroup Template_Project
   * @{
@@ -138,10 +139,7 @@ void PendSV_Handler(void)
   * @param  None
   * @retval None
   */
-void SysTick_Handler(void)
-{
-/*  TimingDelay_Decrement(); */
-}
+
 
 /******************************************************************************/
 /*                 STM32F4xx Peripherals Interrupt Handlers                   */
@@ -149,7 +147,12 @@ void SysTick_Handler(void)
 /*  available peripheral interrupt handler's name please refer to the startup */
 /*  file (startup_stm32f40xx.s/startup_stm32f427x.s).                         */
 /******************************************************************************/
-
+void TIM3_IRQHandler(void){
+	if(TIM_GetITStatus(TIM3, TIM_IT_Update) == SET){
+		TIM_ClearITPendingBit(TIM3, TIM_IT_Update);
+		lv_tick_inc(1);
+	}
+}
 /**
   * @brief  This function handles PPP interrupt request.
   * @param  None
@@ -165,3 +168,4 @@ void SysTick_Handler(void)
 
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
+;

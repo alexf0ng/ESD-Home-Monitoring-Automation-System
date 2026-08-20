@@ -43,6 +43,7 @@ SOFTWARE.
 #include <stdbool.h>
 #include "string.h"
 #include <stdio.h>
+#include "tm_stm32f4_stmpe811.h"
 
 #define LCD_WIDTH   320
 #define LCD_HEIGHT  240
@@ -53,24 +54,24 @@ SOFTWARE.
 
 /* LVGL draw buffer */
 static lv_color_t buf1[LCD_WIDTH * 20];
+static char buffer[50];
+lv_obj_t *title;
 
-static void my_flush_cb(lv_display_t *display,
-                        const lv_area_t *area,
-                        uint8_t *px_map)
+
+static void my_flush_cb(
+    lv_display_t *display,
+    const lv_area_t *area,
+    uint8_t *px_map)
 {
-    /* Cast px_map directly to uint16_t pointers */
-    uint16_t *buf16 = (uint16_t *)px_map;
-
-    for (int32_t y = area->y1; y <= area->y2; y++)
-    {
-        for (int32_t x = area->x1; x <= area->x2; x++)
-        {
-            TM_ILI9341_DrawPixel(x, y, *buf16);
-            buf16++;
-        }
-    }
+    TM_ILI9341_DrawBuffer(area->x1, area->y1,area->x2,area->y2, (uint16_t *)px_map);
 
     lv_display_flush_ready(display);
+}
+static void switch_to_main(lv_timer_t *timer)
+{
+    lv_label_set_text(title, "Main");
+
+    lv_timer_del(timer);
 }
 
 void USART1_Init(void) {
@@ -100,7 +101,6 @@ void USART1_Init(void) {
 
 	USART_Cmd(USART1, ENABLE);
 }
-
 void USART1_SendString(const char* str){
 	while(*str){
 		while(USART_GetFlagStatus(USART1, USART_FLAG_TXE) == RESET);
@@ -108,127 +108,143 @@ void USART1_SendString(const char* str){
 	}
 }
 
+void GPIO_obLED_Init(){
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOG, ENABLE);
+	GPIO_InitTypeDef GPIO_InitStructure;
+
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_13 | GPIO_Pin_14;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
+	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
+	GPIO_Init(GPIOG, &GPIO_InitStructure);
+}
+
+void TIM_TIMER_Init(){
+	TIM_TimeBaseInitTypeDef TIM_BaseStruct;
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE);
+	// 90mhz / 900 = 100000 tick per sec
+	// so 1 tick is 1/100000 = 1x10^-5
+	// then we set period to 100 becase 1x10^-5 x100 = 1ms
+	TIM_BaseStruct.TIM_Prescaler = 899; // got +1 here
+	TIM_BaseStruct.TIM_CounterMode = TIM_CounterMode_Up;
+	TIM_BaseStruct.TIM_Period = 99; // got +1 here
+	TIM_BaseStruct.TIM_ClockDivision = TIM_CKD_DIV1;
+	TIM_BaseStruct.TIM_RepetitionCounter = 0;
+	TIM_TimeBaseInit(TIM3, &TIM_BaseStruct);
+	TIM_ITConfig(TIM3, TIM_IT_Update, ENABLE);
+}
+void TIM_NVIC_Config(){
+	NVIC_InitTypeDef NVIC_InitStructure;
+	NVIC_InitStructure.NVIC_IRQChannel = TIM3_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+	NVIC_Init(&NVIC_InitStructure);
+}
+
+void splash_screen(){
+	TM_ILI9341_Rotate(TM_ILI9341_Orientation_Landscape_1);
+	 // create lvgl display
+	lv_display_t *display = lv_display_create(
+		LCD_WIDTH,
+		LCD_HEIGHT
+	);
+
+	// give lvgl drawing buffer
+	lv_display_set_buffers(
+		display,
+		buf1,
+		NULL,
+		sizeof(buf1),
+		LV_DISPLAY_RENDER_MODE_PARTIAL
+	);
+
+
+	// draw on ili
+	lv_display_set_flush_cb(
+		display,
+		my_flush_cb
+	);
+
+
+	// draw on ui
+	lv_obj_t *screen = lv_screen_active();
+	lv_obj_set_style_bg_color(
+		screen,
+		lv_color_hex(0x101820),
+		LV_PART_MAIN
+	);
+
+	// splash screen title
+	title = lv_label_create(screen);
+
+	lv_label_set_text(
+		title,
+		"Welcome to my SmartBox"
+	);
+
+
+
+	lv_obj_set_style_text_color(
+		title,
+		lv_color_hex(0xFFFFFF),
+		LV_PART_MAIN
+	);
+
+	lv_obj_align(
+		title,
+		LV_ALIGN_CENTER,
+		0,
+		-30
+	);
+
+
+	// subtitle splash screen
+	lv_obj_t *subtitle = lv_label_create(screen);
+
+	lv_label_set_text(
+		subtitle,
+		"Initializing..."
+	);
+
+	lv_obj_set_style_text_color(
+		subtitle,
+		lv_color_hex(0xAAAAAA),
+		LV_PART_MAIN
+	);
+
+	lv_obj_align(
+		subtitle,
+		LV_ALIGN_CENTER,
+		0,
+		10
+	);
+}
+
+
 int main(void)
 {
-	char buffer[50];
-
-	USART1_SendString("Initialization...");
-	int num = 3;
 	USART1_Init();
-	sprintf(buffer, "finish initialization %d", num);
+	USART1_SendString("USART Initialize Success!\n\r");
 
-	USART1_SendString(buffer);
+	USART1_SendString("Initializing other component...\n\r");
+	TM_ILI9341_Init();
+	lv_init();
+	GPIO_obLED_Init();
+	TIM_TIMER_Init();
+	TIM_NVIC_Config();
+	TM_STMPE811_TouchData touchData;
 
+	USART1_SendString("Initialization Finish!\n\r");
+	splash_screen();
+	TIM_Cmd(TIM3, ENABLE);
+	lv_timer_create(switch_to_main, 5000, NULL);
 
-	 /* =========================================================
-	     * 1. Initialize ILI9341
-	     * ========================================================= */
-	    TM_ILI9341_Init();
-
-	    TM_ILI9341_Rotate(TM_ILI9341_Orientation_Landscape_1);
-
-
-	    /* =========================================================
-	     * 2. Initialize LVGL
-	     * ========================================================= */
-	    lv_init();
-
-
-	    /* =========================================================
-	     * 3. Create LVGL display
-	     * ========================================================= */
-	    lv_display_t *display = lv_display_create(
-	        LCD_WIDTH,
-	        LCD_HEIGHT
-	    );
-
-
-	    /* =========================================================
-	     * 4. Give LVGL a drawing buffer
-	     * ========================================================= */
-	    lv_display_set_buffers(
-	        display,
-	        buf1,
-	        NULL,
-	        sizeof(buf1),
-	        LV_DISPLAY_RENDER_MODE_PARTIAL
-	    );
-
-
-	    /* =========================================================
-	     * 5. Tell LVGL how to send pixels to ILI9341
-	     * ========================================================= */
-	    lv_display_set_flush_cb(
-	        display,
-	        my_flush_cb
-	    );
-
-
-	    /* =========================================================
-	     * 6. Create UI
-	     * ========================================================= */
-
-	    lv_obj_t *screen = lv_screen_active();
-
-	    /* Background */
-	    lv_obj_set_style_bg_color(
-	        screen,
-	        lv_color_hex(0x101820),
-	        LV_PART_MAIN
-	    );
-
-
-	    /* Title */
-	    lv_obj_t *title = lv_label_create(screen);
-
-	    lv_label_set_text(
-	        title,
-	        "Welcome to my SmartBox"
-	    );
-
-	    lv_obj_set_style_text_color(
-	        title,
-	        lv_color_hex(0xFFFFFF),
-	        LV_PART_MAIN
-	    );
-
-	    lv_obj_align(
-	        title,
-	        LV_ALIGN_CENTER,
-	        0,
-	        -30
-	    );
-
-
-	    /* Subtitle */
-	    lv_obj_t *subtitle = lv_label_create(screen);
-
-	    lv_label_set_text(
-	        subtitle,
-	        "Initializing..."
-	    );
-
-	    lv_obj_set_style_text_color(
-	        subtitle,
-	        lv_color_hex(0xAAAAAA),
-	        LV_PART_MAIN
-	    );
-
-	    lv_obj_align(
-	        subtitle,
-	        LV_ALIGN_CENTER,
-	        0,
-	        10
-	    );
-
-
-	    /* =========================================================
-	     * 7. LVGL main loop
-	     * ========================================================= */
-	    while (1)
-	    {
-	        lv_timer_handler();
-	    }
+	while (1)
+	{
+		lv_timer_handler();
+	}
 
 
 }
