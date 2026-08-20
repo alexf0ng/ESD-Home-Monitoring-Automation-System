@@ -42,7 +42,6 @@ SOFTWARE.
 #include "lvgl.h"
 #include <stdbool.h>
 #include "string.h"
-#include <stdio.h>
 
 #define LCD_WIDTH   320
 #define LCD_HEIGHT  240
@@ -103,22 +102,21 @@ void USART1_Init(void) {
 
 void USART1_SendString(const char* str){
 	while(*str){
-		while(USART_GetFlagStatus(USART1, USART_FLAG_TXE) == RESET);
+		while(USAERT_GetFlagStatus(USART1, USART_FLAG_TXE) == RESET);
 		USART_SendData(USART1, *str++);
 	}
 }
 
+void
 int main(void)
 {
-	char buffer[50];
-
-	USART1_SendString("Initialization...");
+	printf("Initialization...");
 	int num = 3;
+	string usart_msg;
 	USART1_Init();
-	sprintf(buffer, "finish initialization %d", num);
-
-	USART1_SendString(buffer);
-
+	printf("Finish Initialization... %d", num);
+	usart_msg = "finish initialization" + num;
+	USART1_SendString(usart_msg);
 
 	 /* =========================================================
 	     * 1. Initialize ILI9341
