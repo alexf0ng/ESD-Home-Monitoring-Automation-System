@@ -1,0 +1,13 @@
+{
+  "deftheme": {
+    "name": "Default",
+    "properties": []
+  },
+  "themes": [
+    {
+      "name": "Modern Minimalis",
+      "properties": []
+    }
+  ],
+  "selected_theme": "Default"
+}
