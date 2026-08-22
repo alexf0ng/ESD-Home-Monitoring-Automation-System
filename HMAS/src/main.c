@@ -30,24 +30,26 @@ SOFTWARE.
 /* Includes */
 #include "stm32f4xx.h"
 #include "stm32f429i_discovery.h"
-#include "stm32f4xx_usart.h"
+#include "tm_stm32f4_ili9341.h"
+#include "tm_stm32f4_fonts.h"
+#include "tm_stm32f4_stmpe811.h"
 
 /* Private macro */
 /* Private variables */
 /* Private function prototypes */
 /* Private functions */
 #include "defines.h"
-#include "tm_stm32f4_ili9341.h"
-#include "tm_stm32f4_fonts.h"
 #include "lvgl.h"
-#include <stdbool.h>
-#include "string.h"
-#include <stdio.h>
-#include "tm_stm32f4_stmpe811.h"
 #include "ui.h"
+#include "string.h"
 
-#define LCD_WIDTH   320
-#define LCD_HEIGHT  240
+#include <stdbool.h>
+#include <stdio.h>
+
+#include "user/user.h"
+#include "usart/usart.h"
+#include "gpio/gpio.h"
+#include "timer/timer.h"
 
 /* LCD resolution in Landscape */
 #define LCD_WIDTH   320
@@ -55,22 +57,61 @@ SOFTWARE.
 
 /* LVGL draw buffer */
 static lv_color_t buf1[LCD_WIDTH * 20];
-static char buffer[50];
+char buffer[50];
 lv_obj_t *title;
 
+// user
+User user;
+Usart1 usart1 = {
+	.port = GPIOA,
+	.tx_pin = GPIO_Pin_9,
+	.rx_pin = GPIO_Pin_10,
+    .tx_source = GPIO_PinSource9,
+	.rx_source = GPIO_PinSource10,
+	.baudrate = 115200
+};
+Gpio gpio_obled = {
+	.pin = GPIO_Pin_13 | GPIO_Pin_14
+};
+
+Gpio gpio_btn = {
+	.pin = GPIO_Pin_5
+};
+
+Timer timer3 =
+{
+    .timer = TIM3,
+    .timer_clock = RCC_APB1Periph_TIM3,
+	// 90mhz / 900 = 100000 tick per sec
+	// so 1 tick is 1/100000 = 1x10^-5
+	// then we set period to 100 becase 1x10^-5 x100 = 1ms
+    .prescaler = 899, // got + 1 here
+    .period = 99, // got +1 here
+    .irq_channel = TIM3_IRQn,
+    .preemption_priority = 0,
+    .sub_priority = 0
+};
+
+
+
+
+
+
+
+
 TM_STMPE811_TouchData touchData;
-void USART1_SendString(const char* str){
-	while(*str){
-		while(USART_GetFlagStatus(USART1, USART_FLAG_TXE) == RESET);
-		USART_SendData(USART1, *str++);
-	}
-}
 static void my_flush_cb(
     lv_display_t *display,
     const lv_area_t *area,
     uint8_t *px_map)
 {
-    TM_ILI9341_DrawBuffer(area->x1, area->y1,area->x2,area->y2, (uint16_t *)px_map);
+    TM_ILI9341_DrawBuffer(
+    		area->x1,
+			area->y1,
+			area->x2,
+			area->y2,
+			(uint16_t *)px_map
+	);
 
     lv_display_flush_ready(display);
 }
@@ -78,8 +119,7 @@ void my_touchpad_read(lv_indev_t * indev, lv_indev_data_t * data)
 {
     char msg[50];
 
-    if (TM_STMPE811_ReadTouch(&touchData) == TM_STMPE811_State_Pressed)
-    {
+    if (TM_STMPE811_ReadTouch(&touchData) == TM_STMPE811_State_Pressed){
         data->state = LV_INDEV_STATE_PRESSED;
 
         data->point.x = touchData.y;
@@ -92,184 +132,64 @@ void my_touchpad_read(lv_indev_t * indev, lv_indev_data_t * data)
             data->point.y
         );
 
-        USART1_SendString(msg);
-    }
-    else
-    {
+        USART1_send_string(msg);
+    }else{
         data->state = LV_INDEV_STATE_RELEASED;
     }
 }
 
 static void switch_to_main(lv_timer_t *timer)
 {
-	_ui_screen_change(&ui_Screen2, LV_SCR_LOAD_ANIM_FADE_ON, 500, 0, &ui_Screen2_screen_init);
+	_ui_screen_change(
+		&ui_Screen2,
+		LV_SCR_LOAD_ANIM_FADE_ON,
+		500,
+		0,
+		&ui_Screen2_screen_init
+	);
 
     lv_timer_del(timer);
 }
 
 
-void USART1_Init(void) {
-	GPIO_InitTypeDef GPIO_InitStruct;
-	USART_InitTypeDef USART_InitStruct;
-
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE);
-
-	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_9 | GPIO_Pin_10;
-	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_AF;
-	GPIO_InitStruct.GPIO_Speed = GPIO_Speed_50MHz;
-	GPIO_InitStruct.GPIO_OType = GPIO_OType_PP;
-	GPIO_InitStruct.GPIO_PuPd = GPIO_PuPd_UP;
-	GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-	GPIO_PinAFConfig(GPIOA, GPIO_PinSource9, GPIO_AF_USART1);
-	GPIO_PinAFConfig(GPIOA, GPIO_PinSource10, GPIO_AF_USART1);
-
-	USART_InitStruct.USART_BaudRate = 115200;
-	USART_InitStruct.USART_WordLength = USART_WordLength_8b;
-	USART_InitStruct.USART_StopBits = USART_StopBits_1;
-	USART_InitStruct.USART_Parity = USART_Parity_No;
-	USART_InitStruct.USART_Mode = USART_Mode_Tx | USART_Mode_Rx;
-	USART_InitStruct.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
-	USART_Init(USART1, &USART_InitStruct);
-
-	USART_Cmd(USART1, ENABLE);
-}
-
-
-void GPIO_obLED_Init(){
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOG, ENABLE);
-	GPIO_InitTypeDef GPIO_InitStructure;
-
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_13 | GPIO_Pin_14;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
-	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
-	GPIO_Init(GPIOG, &GPIO_InitStructure);
-}
-
-void TIM_TIMER_Init(){
-	TIM_TimeBaseInitTypeDef TIM_BaseStruct;
-	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE);
-	// 90mhz / 900 = 100000 tick per sec
-	// so 1 tick is 1/100000 = 1x10^-5
-	// then we set period to 100 becase 1x10^-5 x100 = 1ms
-	TIM_BaseStruct.TIM_Prescaler = 899; // got +1 here
-	TIM_BaseStruct.TIM_CounterMode = TIM_CounterMode_Up;
-	TIM_BaseStruct.TIM_Period = 99; // got +1 here
-	TIM_BaseStruct.TIM_ClockDivision = TIM_CKD_DIV1;
-	TIM_BaseStruct.TIM_RepetitionCounter = 0;
-	TIM_TimeBaseInit(TIM3, &TIM_BaseStruct);
-	TIM_ITConfig(TIM3, TIM_IT_Update, ENABLE);
-}
-void TIM_NVIC_Config(){
-	NVIC_InitTypeDef NVIC_InitStructure;
-	NVIC_InitStructure.NVIC_IRQChannel = TIM3_IRQn;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
-	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-	NVIC_Init(&NVIC_InitStructure);
-}
-
-void splash_screen(){
-	TM_ILI9341_Rotate(TM_ILI9341_Orientation_Landscape_1);
-	 // create lvgl display
-	lv_display_t *display = lv_display_create(
-		LCD_WIDTH,
-		LCD_HEIGHT
-	);
-
-	// give lvgl drawing buffer
-	lv_display_set_buffers(
-		display,
-		buf1,
-		NULL,
-		sizeof(buf1),
-		LV_DISPLAY_RENDER_MODE_PARTIAL
-	);
-
-
-	// draw on ili
-	lv_display_set_flush_cb(
-		display,
-		my_flush_cb
-	);
-
-
-	// draw on ui
-	lv_obj_t *screen = lv_screen_active();
-	lv_obj_set_style_bg_color(
-		screen,
-		lv_color_hex(0x101820),
-		LV_PART_MAIN
-	);
-
-	// splash screen title
-	title = lv_label_create(screen);
-
-	lv_label_set_text(
-		title,
-		"Welcome to my SmartBox"
-	);
-
-
-
-	lv_obj_set_style_text_color(
-		title,
-		lv_color_hex(0xFFFFFF),
-		LV_PART_MAIN
-	);
-
-	lv_obj_align(
-		title,
-		LV_ALIGN_CENTER,
-		0,
-		-30
-	);
-
-
-	// subtitle splash screen
-	lv_obj_t *subtitle = lv_label_create(screen);
-
-	lv_label_set_text(
-		subtitle,
-		"Initializing..."
-	);
-
-	lv_obj_set_style_text_color(
-		subtitle,
-		lv_color_hex(0xAAAAAA),
-		LV_PART_MAIN
-	);
-
-	lv_obj_align(
-		subtitle,
-		LV_ALIGN_CENTER,
-		0,
-		10
-	);
-}
-
-
 int main(void)
 {
-    USART1_Init();
+	// usart initialize
+	user_init(&user);
+	USART1_init(&usart1);
+	USART1_send_string("Initializing...\r\n");
+	USART1_send_string("Usart Initialize Success!\r\n");
 
-    USART1_SendString("USART Initialize Success!\r\n");
+	// user initialize
+	user_init(&user);
+	USART1_send_string("User Initialize Success!\r\n");
 
-    TM_ILI9341_Init();
+	// lcd screen init
+	TM_ILI9341_Init();
+	USART1_send_string("LCD Initialize Success!\r\n");
 
-    lv_init();
+	// lvgl init
+	lv_init();
+	USART1_send_string("LVGL Initialize Success!\r\n");
 
-    GPIO_obLED_Init();
+	// gpio init
+	GPIO_obLED_init(&gpio_obled);
+	GPIO_btn_init(&gpio_btn);
+	USART1_send_string("GPIO Initialize Success!\r\n");
 
-    TIM_TIMER_Init();
-    TIM_NVIC_Config();
+	// timer and interrupt init
+	timer_init(&timer3);
+	timer_NVIC_init(&timer3);
+	USART1_send_string("Timer Initialize Success!\r\n");
 
-    TM_STMPE811_Init();
+	// touch screen
+	TM_STMPE811_Init();
+	USART1_send_string("TMSTMPE811 Success!\r\n");
 
-    USART1_SendString("Initialization Finish!\r\n");
+
+    USART1_send_string("Initialization Finish!\r\n");
+
+
 
     TM_ILI9341_Rotate(TM_ILI9341_Orientation_Landscape_1);
 
@@ -292,7 +212,7 @@ int main(void)
     lv_indev_t *indev = lv_indev_create();
 
     lv_indev_set_type(
-        indev,
+    	indev,
         LV_INDEV_TYPE_POINTER
     );
 
@@ -303,7 +223,7 @@ int main(void)
 
     ui_init();
 
-    TIM_Cmd(TIM3, ENABLE);
+    TIM_Cmd(timer3.timer, ENABLE);
 
     lv_timer_create(
         switch_to_main,
@@ -311,9 +231,12 @@ int main(void)
         NULL
     );
 
+
+
     while (1)
     {
         lv_timer_handler();
+
     }
 }
 

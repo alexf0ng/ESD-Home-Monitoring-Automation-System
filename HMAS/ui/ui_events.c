@@ -4,29 +4,45 @@
 // Project name: SquareLine_Project
 
 #include "ui.h"
+#include "user/user.h"
+#include "usart/usart.h"
 #include <string.h>
+#include <stdio.h>
+#include <stdbool.h>
 
+
+// function
+void num_btn_pressed(lv_event_t * e);
+void enter_btn_pressed(lv_event_t * e);
+void clear_btn_pressed(lv_event_t * e);
+void ui_reset_password(void);
+void reset(void);
+// local
 char entered_pin[5] = "";
 uint8_t pin_index = 0;
-#include <stdio.h>
-const char correct_pin[] = "1234";
-char buffer[50];
+static bool password_reset_mode = false;
 
-void num_btn_pressed(lv_event_t * e)
-{
+// from main code
+extern char buffer[50];
+extern User user;
+
+// here just handle ui stuff only
+// not mixing authentication here
+// here more doing input validation
+void num_btn_pressed(lv_event_t * e){
     lv_obj_t * btn = lv_event_get_target(e);
     lv_obj_t * label = lv_obj_get_child(btn, 0);
 
     if(label == NULL)
     {
-        USART1_SendString("ERROR: No label\r\n");
+        USART1_send_string("ERROR: No label\r\n");
         return;
     }
 
     const char * num_str = lv_label_get_text(label);
 
     sprintf(buffer, "BUTTON: %s\r\n", num_str);
-    USART1_SendString(buffer);
+    USART1_send_string(buffer);
 
     if(pin_index >= 4)
         return;
@@ -37,7 +53,7 @@ void num_btn_pressed(lv_event_t * e)
     pin_index++;
 
     sprintf(buffer, "PIN: %s\r\n", entered_pin);
-    USART1_SendString(buffer);
+    USART1_send_string(buffer);
 
     if(pin_index == 1)
         lv_obj_add_state(ui_Pin0, LV_STATE_CHECKED);
@@ -48,29 +64,58 @@ void num_btn_pressed(lv_event_t * e)
     else if(pin_index == 4)
         lv_obj_add_state(ui_Pin3, LV_STATE_CHECKED);
 }
-void enter_btn_pressed(lv_event_t * e)
-{
-    if(pin_index == 4) {
-        if(strcmp(entered_pin, correct_pin) == 0) {
-            lv_label_set_text(ui_statusLabel, "Success!");
-            lv_obj_clear_state(ui_statusLabel, LV_STATE_USER_1);
-        } else {
-            lv_label_set_text(ui_statusLabel, "Incorrect Password");
-            lv_obj_add_state(ui_statusLabel, LV_STATE_USER_1);
-        }
-    }
+
+void enter_btn_pressed(lv_event_t * e){
+	if(pin_index != 4)
+		return;
+
+	if(!password_reset_mode){
+		if(user_login(&user, entered_pin)) {
+			lv_label_set_text(ui_statusLabel, "Success!");
+			lv_obj_clear_state(ui_statusLabel, LV_STATE_USER_1);
+			reset();
+			// go to main
+		}else{
+			lv_label_set_text(ui_statusLabel, "Incorrect Password");
+			lv_obj_add_state(ui_statusLabel, LV_STATE_USER_1);
+			reset();
+		}
+	}else{
+		user_change_password(&user, entered_pin);
+
+		lv_label_set_text(ui_statusLabel, "Password Changed!");
+		lv_obj_clear_state(ui_statusLabel, LV_STATE_USER_1);
+		password_reset_mode = false;
+		reset();
+		// go to main
+	}
+
+
 }
 
-void clear_btn_pressed(lv_event_t * e)
-{
-    pin_index = 0;
-    entered_pin[0] = '\0';
+void clear_btn_pressed(lv_event_t * e){
+    reset();
 
-    lv_obj_clear_state(ui_Pin0, LV_STATE_CHECKED);
-    lv_obj_clear_state(ui_Pin1, LV_STATE_CHECKED);
-    lv_obj_clear_state(ui_Pin2, LV_STATE_CHECKED);
-    lv_obj_clear_state(ui_Pin3, LV_STATE_CHECKED);
-
-    lv_label_set_text(ui_statusLabel, "Enter Password");
+    lv_label_set_text(ui_statusLabel, password_reset_mode ? "Enter New Password" : "Enter Password");
     lv_obj_clear_state(ui_statusLabel, LV_STATE_USER_1);
+}
+
+// not event function, just reset
+// since utilize same page for reset password, change the label only
+void ui_reset_password(void){
+	reset();
+	password_reset_mode = true;
+	lv_label_set_text(ui_statusLabel, "Enter New Password");
+	lv_obj_clear_state(ui_statusLabel, LV_STATE_USER_1);
+}
+
+// reset everything
+void reset(void){
+	pin_index = 0;
+	entered_pin[0] = '\0';
+
+	lv_obj_clear_state(ui_Pin0, LV_STATE_CHECKED);
+	lv_obj_clear_state(ui_Pin1, LV_STATE_CHECKED);
+	lv_obj_clear_state(ui_Pin2, LV_STATE_CHECKED);
+	lv_obj_clear_state(ui_Pin3, LV_STATE_CHECKED);
 }
