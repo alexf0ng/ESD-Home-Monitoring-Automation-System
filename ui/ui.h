@@ -18,12 +18,8 @@ extern "C" {
 
 ///////////////////// SCREENS ////////////////////
 
-#include "screens/ui_InitializePage.h"
-#include "screens/ui_PasswordPage.h"
-#include "screens/ui_DashboardPage.h"
-#include "screens/ui_SensorPage.h"
-#include "screens/ui_RecordPage.h"
-#include "screens/ui_SettingPage.h"
+#include "screens/ui_Screen1.h"
+#include "screens/ui_Screen2.h"
 
 ///////////////////// VARIABLES ////////////////////
 
@@ -35,14 +31,6 @@ extern lv_obj_t * ui____initial_actions0;
 
 // IMAGES AND IMAGE SETS
 LV_IMG_DECLARE(ui_img_spinner_png);    // assets/spinner.png
-LV_IMG_DECLARE(ui_img_sensor_png);    // assets/sensor.png
-LV_IMG_DECLARE(ui_img_record_png);    // assets/record.png
-LV_IMG_DECLARE(ui_img_setting_png);    // assets/setting.png
-LV_IMG_DECLARE(ui_img_logout_png);    // assets/logout.png
-LV_IMG_DECLARE(ui_img_temperature_png);    // assets/temperature.png
-LV_IMG_DECLARE(ui_img_humidity_png);    // assets/humidity.png
-LV_IMG_DECLARE(ui_img_intensity_png);    // assets/intensity.png
-LV_IMG_DECLARE(ui_img_save_png);    // assets/save.png
 
 // UI INIT
 void ui_init(void);

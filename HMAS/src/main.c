@@ -59,6 +59,11 @@ SOFTWARE.
 static lv_color_t buf1[LCD_WIDTH * 20];
 char buffer[50];
 lv_obj_t *title;
+volatile uint32_t button_hold_ms = 0;
+volatile bool button_held_5s = false;
+volatile bool button_5s_triggered = false;
+TM_STMPE811_TouchData touchData;
+
 
 // user
 User user;
@@ -93,13 +98,6 @@ Timer timer3 =
 };
 
 
-
-
-
-
-
-
-TM_STMPE811_TouchData touchData;
 static void my_flush_cb(
     lv_display_t *display,
     const lv_area_t *area,
@@ -141,11 +139,11 @@ void my_touchpad_read(lv_indev_t * indev, lv_indev_data_t * data)
 static void switch_to_main(lv_timer_t *timer)
 {
 	_ui_screen_change(
-		&ui_Screen2,
+		&ui_SettingPage,
 		LV_SCR_LOAD_ANIM_FADE_ON,
 		500,
 		0,
-		&ui_Screen2_screen_init
+		&ui_SettingPage_screen_init
 	);
 
     lv_timer_del(timer);
@@ -155,7 +153,6 @@ static void switch_to_main(lv_timer_t *timer)
 int main(void)
 {
 	// usart initialize
-	user_init(&user);
 	USART1_init(&usart1);
 	USART1_send_string("Initializing...\r\n");
 	USART1_send_string("Usart Initialize Success!\r\n");
@@ -233,9 +230,13 @@ int main(void)
 
 
 
-    while (1)
-    {
-        lv_timer_handler();
+
+    while (1) {
+
+		lv_timer_handler();
+
+
+
 
     }
 }

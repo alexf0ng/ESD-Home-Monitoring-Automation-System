@@ -30,6 +30,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_it.h"
 #include "lvgl.h"
+#include "usart/usart.h"
 
 /** @addtogroup Template_Project
   * @{
@@ -41,6 +42,11 @@
 /* Private variables ---------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
+
+extern volatile uint32_t button_hold_ms;
+extern volatile bool button_held_5s;
+extern volatile bool button_5s_triggered;
+
 
 /******************************************************************************/
 /*            Cortex-M4 Processor Exceptions Handlers                         */
@@ -151,6 +157,26 @@ void TIM3_IRQHandler(void){
 	if(TIM_GetITStatus(TIM3, TIM_IT_Update) == SET){
 		TIM_ClearITPendingBit(TIM3, TIM_IT_Update);
 		lv_tick_inc(1);
+		if(GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_5) == SET)
+		        {
+		            if(button_hold_ms < 5000)
+		            {
+		                button_hold_ms++;
+		            }
+
+		            if(button_hold_ms >= 5000 &&
+		                           !button_5s_triggered)
+		                        {
+		                            button_held_5s = true;
+		                            button_5s_triggered = true;
+		                        }
+		        }
+		        else
+		        {
+		            /* Button released */
+		            button_hold_ms = 0;
+		            button_5s_triggered = false;
+		        }
 	}
 }
 /**

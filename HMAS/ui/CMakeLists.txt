@@ -1,9 +1,21 @@
-SET(SOURCES screens/ui_Screen1.c
-    screens/ui_Screen2.c
+SET(SOURCES screens/ui_InitializePage.c
+    screens/ui_PasswordPage.c
+    screens/ui_DashboardPage.c
+    screens/ui_SensorPage.c
+    screens/ui_RecordPage.c
+    screens/ui_SettingPage.c
     ui.c
     components/ui_comp_hook.c
     ui_helpers.c
     ui_events.c
-    images/ui_img_spinner_png.c)
+    images/ui_img_spinner_png.c
+    images/ui_img_sensor_png.c
+    images/ui_img_record_png.c
+    images/ui_img_setting_png.c
+    images/ui_img_logout_png.c
+    images/ui_img_temperature_png.c
+    images/ui_img_humidity_png.c
+    images/ui_img_intensity_png.c
+    images/ui_img_save_png.c)
 
 add_library(ui ${SOURCES})
