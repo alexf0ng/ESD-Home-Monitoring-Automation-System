@@ -11,10 +11,12 @@
 #include "ui.h"
 #include <stdio.h>
 #include "sensor/sensor.h"
+#include "page/setting_page/setting_page.h"
+#include "gpio/gpio.h"
 
-void sensorpage_update(void);
-void sensorpage_start(void);
-void sensorpage_stop(void);
+void sensor_page_update(void);
+void sensor_page_start(void);
+void sensor_page_stop(void);
 
 
 #endif /* PAGE_SENSOR_PAGE_SENSOR_PAGE_H_ */

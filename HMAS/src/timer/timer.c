@@ -26,11 +26,11 @@ void timer_init(Timer *timer)
         &TIM_BaseStruct
     );
 
-    TIM_ITConfig(
-        timer->timer,
-        TIM_IT_Update,
-        ENABLE
-    );
+    timer->enable_interrupt ? TIM_ITConfig(
+									timer->timer,
+									TIM_IT_Update,
+									ENABLE
+								) : "";
 }
 
 void timer_NVIC_init(Timer *timer)

@@ -18037,7 +18037,7 @@
             "disabled": false,
             "nid": 1000704,
             "strtype": "_event/EventHandler",
-            "strval": "CLICKED",
+            "strval": "SCREEN_LOADED",
             "childs": [
               {
                 "nid": 1000705,
@@ -27676,7 +27676,7 @@
     "separate_screen_save": false,
     "hierarchy_state_save": false,
     "reverse_event_order": false,
-    "backup_cnt": 9,
+    "backup_cnt": 10,
     "autosave_cnt": 0,
     "group_color_cnt": 0,
     "imagebytearrayprefix": null,

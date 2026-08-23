@@ -286,6 +286,7 @@ void ui_SettingPage_screen_init(void)
     lv_obj_set_style_text_letter_space(ui_TempThresIncSt, 1, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_line_space(ui_TempThresIncSt, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_font(ui_TempThresIncSt, &lv_font_montserrat_18, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_add_flag(ui_TempThresIncSt, LV_OBJ_FLAG_CLICKABLE);
 
     ui_TempThresValSt = lv_label_create(ui_TempThresPanelSt);
     lv_obj_set_width(ui_TempThresValSt, LV_SIZE_CONTENT);   /// 1
@@ -312,6 +313,7 @@ void ui_SettingPage_screen_init(void)
     lv_obj_set_style_text_letter_space(ui_TempThresDecSt, 1, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_line_space(ui_TempThresDecSt, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_font(ui_TempThresDecSt, &lv_font_montserrat_18, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_add_flag(ui_TempThresDecSt, LV_OBJ_FLAG_CLICKABLE);
 
     ui_HumThresPanelSt = lv_obj_create(ui_SettingPage);
     lv_obj_set_width(ui_HumThresPanelSt, 275);
@@ -350,6 +352,7 @@ void ui_SettingPage_screen_init(void)
     lv_obj_set_style_text_letter_space(ui_HumThresIncSt, 1, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_line_space(ui_HumThresIncSt, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_font(ui_HumThresIncSt, &lv_font_montserrat_18, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_add_flag(ui_HumThresIncSt, LV_OBJ_FLAG_CLICKABLE);
 
     ui_HumThresValSt = lv_label_create(ui_HumThresPanelSt);
     lv_obj_set_width(ui_HumThresValSt, LV_SIZE_CONTENT);   /// 1
@@ -376,6 +379,7 @@ void ui_SettingPage_screen_init(void)
     lv_obj_set_style_text_letter_space(ui_HumThresDecSt, 1, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_line_space(ui_HumThresDecSt, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_font(ui_HumThresDecSt, &lv_font_montserrat_18, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_add_flag(ui_HumThresDecSt, LV_OBJ_FLAG_CLICKABLE);
 
     lv_obj_add_event_cb(ui_BottomNavDashboardSt, ui_event_BottomNavDashboardSt, LV_EVENT_ALL, NULL);
     lv_obj_add_event_cb(ui_BottomNavSensorSt, ui_event_BottomNavSensorSt, LV_EVENT_ALL, NULL);

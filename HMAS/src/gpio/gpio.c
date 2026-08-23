@@ -44,3 +44,14 @@ void GPIO_btn_init(Gpio *gpio)
 	);
 }
 
+void GPIO_openObLED(bool pg13, bool pg14){
+	if(pg13)
+		GPIO_SetBits(GPIOG, GPIO_Pin_13);
+	else
+		GPIO_ResetBits(GPIOG, GPIO_Pin_13);
+
+	if(pg14)
+		GPIO_SetBits(GPIOG, GPIO_Pin_14);
+	else
+		GPIO_ResetBits(GPIOG, GPIO_Pin_14);
+}

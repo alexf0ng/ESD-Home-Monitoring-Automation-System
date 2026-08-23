@@ -582,29 +582,29 @@ void FMC_NAND_Test(void)
   FMC_NAND_ReadID(&NAND_ID);
   sprintf(buf, "Nand Flash ID = %02X,%02X,%02X,%02X  ",NAND_ID.Maker_ID, NAND_ID.Device_ID,
 		                                         NAND_ID.Third_ID, NAND_ID.Fourth_ID );
-  USART1_SendString(buf);
+  USART1_send_string(buf);
   if ((NAND_ID.Maker_ID == 0xEC) && (NAND_ID.Device_ID == 0xF1)
 		&& (NAND_ID.Third_ID == 0x80) && (NAND_ID.Fourth_ID == 0x15))
   {
 	  sprintf(buf, "Type = K9F1G08U0A\r\n");
-	  USART1_SendString(buf);
+	  USART1_send_string(buf);
   }
   else if ((NAND_ID.Maker_ID == 0xEC) && (NAND_ID.Device_ID == 0xF1)
 		&& (NAND_ID.Third_ID == 0x00) && (NAND_ID.Fourth_ID == 0x95))
   {
 	  sprintf(buf, "Type = K9F1G08U0B\r\n");
-	  USART1_SendString(buf);
+	  USART1_send_string(buf);
   }
   else if ((NAND_ID.Maker_ID == 0xAD) && (NAND_ID.Device_ID == 0xF1)
 		&& (NAND_ID.Third_ID == 0x80) && (NAND_ID.Fourth_ID == 0x1D))
   {
 	  sprintf(buf, "Type = HY27UF081G2A\r\n");
-	  USART1_SendString(buf);
+	  USART1_send_string(buf);
   }
   else
   {
 	  sprintf(buf, "Type = Unknow\r\n");
-	  USART1_SendString(buf);
+	  USART1_send_string(buf);
   }
 
   /* NAND memory address to write to */
@@ -628,17 +628,17 @@ void FMC_NAND_Test(void)
 //   for(j = 0; j < 2048; j++)
 //   {
 //	   sprintf(buf,"%x  ",TxBuffer[j]);
-//	USART1_SendString(buf);
+//	USART1_send_string(buf);
 //   }
 
   /* Read back the written data */
   FMC_NAND_ReadSmallPage (RxBuffer, WriteReadAddr, 1);
   sprintf(buf,"\r\nRead several£º \r\n");
-  USART1_SendString(buf);
+  USART1_send_string(buf);
     for(j = 0; j < 2048; j++)
     {
     	sprintf(buf,"%x  ",RxBuffer[j]);
-    	USART1_SendString(buf);
+    	USART1_send_string(buf);
     }
 
 

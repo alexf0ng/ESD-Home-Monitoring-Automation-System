@@ -10,6 +10,16 @@
 extern "C" {
 #endif
 
+#include "ui.h"
+#include "user/user.h"
+#include "usart/usart.h"
+#include "sensor/sensor.h"
+#include "page/page.h"
+#include "page/sensor_page/sensor_page.h"
+#include "page/setting_page/setting_page.h"
+#include <stdio.h>
+#include <stdbool.h>
+
 void num_btn_pressed(lv_event_t * e);
 void enter_btn_pressed(lv_event_t * e);
 void clear_btn_pressed(lv_event_t * e);

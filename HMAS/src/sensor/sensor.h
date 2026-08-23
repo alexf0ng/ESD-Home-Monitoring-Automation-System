@@ -10,8 +10,9 @@
 
 #include "usart/usart.h"
 #include "dht22/dht22.h"
-#include <stddef.h>
 #include "usart/usart.h"
+#include <stdio.h>
+#include <stddef.h>
 
 typedef struct{
 	float temp;
@@ -24,12 +25,10 @@ typedef struct{
 typedef struct{
 	float temp;
 	float hum;
-	const char *excmsgDht22;
 } Dht22;
 
 typedef struct{
 	float ldr;
-    const char *excmsgLdr;
 } Ldr;
 
 Dht22 temp_hum(void);

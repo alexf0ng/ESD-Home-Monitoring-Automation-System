@@ -97,7 +97,6 @@ void ui_event_btn4(lv_event_t * e)
 
     if(event_code == LV_EVENT_CLICKED) {
         num_btn_pressed(e);
-        (e);
     }
 }
 

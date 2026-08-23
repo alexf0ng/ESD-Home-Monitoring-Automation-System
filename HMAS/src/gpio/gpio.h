@@ -11,6 +11,7 @@
 #define GPIO_GPIO_H_
 
 #include <stdint.h>
+#include <stdbool.h>
 #include "stm32f4xx.h"
 
 typedef struct {
@@ -19,5 +20,6 @@ typedef struct {
 
 void GPIO_obLED_init(Gpio *gpio);
 void GPIO_btn_init(Gpio *gpio);
+void GPIO_openObLED(bool pg13, bool pg14);
 
 #endif /* GPIO_GPIO_H_ */

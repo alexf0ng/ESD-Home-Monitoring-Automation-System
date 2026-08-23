@@ -51,6 +51,7 @@ SOFTWARE.
 #include "gpio/gpio.h"
 #include "timer/timer.h"
 #include "page/page.h"
+#include "page/setting_page/setting_page.h"
 
 /* LCD resolution in Landscape */
 #define LCD_WIDTH   320
@@ -84,8 +85,8 @@ Gpio gpio_btn = {
 	.pin = GPIO_Pin_5
 };
 
-Timer timer3 =
-{
+// timer for lvgl
+Timer timer3 = {
     .timer = TIM3,
     .timer_clock = RCC_APB1Periph_TIM3,
 	// 90mhz / 900 = 100000 tick per sec
@@ -95,7 +96,24 @@ Timer timer3 =
     .period = 99, // got +1 here
     .irq_channel = TIM3_IRQn,
     .preemption_priority = 0,
-    .sub_priority = 0
+    .sub_priority = 0,
+	.enable_interrupt = true
+};
+
+// timer by dht22, it use tim2 go and see the source file
+Timer timer2 = {
+	.timer = TIM2,
+	.timer_clock = RCC_APB1Periph_TIM2,
+	.prescaler = (uint16_t) (90000000 / 1000000) - 1,
+	.period = 65535 - 1,
+	.enable_interrupt = false
+};
+
+// threshold
+Threshold threshold = {
+	.temp_threshold = 20,
+	.hum_threshold = 30,
+	.indecrement = 1
 };
 
 
@@ -114,9 +132,8 @@ static void my_flush_cb(
 
     lv_display_flush_ready(display);
 }
-void my_touchpad_read(lv_indev_t * indev, lv_indev_data_t * data)
-{
-    char msg[50];
+void my_touchpad_read(lv_indev_t * indev, lv_indev_data_t * data){
+//    char msg[50];
 
     if (TM_STMPE811_ReadTouch(&touchData) == TM_STMPE811_State_Pressed){
         data->state = LV_INDEV_STATE_PRESSED;
@@ -124,15 +141,15 @@ void my_touchpad_read(lv_indev_t * indev, lv_indev_data_t * data)
         data->point.x = touchData.y;
         data->point.y = 240 - touchData.x;
 
-        sprintf(
-            msg,
-            "Touch X=%d Y=%d\r\n",
-            data->point.x,
-            data->point.y
-        );
-
-        USART1_send_string(msg);
-    }else{
+//        sprintf(
+//            msg,
+//            "Touch X=%d Y=%d\r\n",
+//            data->point.x,
+//            data->point.y
+//        );
+//
+//        USART1_send_string(msg);
+    } else {
         data->state = LV_INDEV_STATE_RELEASED;
     }
 }
@@ -172,15 +189,21 @@ int main(void)
 	// timer and interrupt init
 	timer_init(&timer3);
 	timer_NVIC_init(&timer3);
+	timer_init(&timer2);
+	TIM_Cmd(timer3.timer, ENABLE);
+	TIM_Cmd(timer2.timer, ENABLE);
 	USART1_send_string("Timer Initialize Success!\r\n");
 
 	// touch screen
 	TM_STMPE811_Init();
-	USART1_send_string("TMSTMPE811 Success!\r\n");
+	USART1_send_string("TMSTMPE811 Initialize Success!\r\n");
 
 	// dht22 ldr init
 	DHT22_Init();
+	USART1_send_string("DHT22 Initialize Success!\r\n");
 
+	// threshold value init
+	temp_hum_threshold_init(threshold);
 
     USART1_send_string("Initialization Finish!\r\n");
 
@@ -217,8 +240,6 @@ int main(void)
     );
 
     ui_init();
-
-    TIM_Cmd(timer3.timer, ENABLE);
 
     lv_timer_create(
         switch_to_main,

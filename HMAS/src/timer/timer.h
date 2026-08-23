@@ -9,6 +9,7 @@
 #define TIMER_TIMER_H_
 
 #include <stdint.h>
+#include <stdbool.h>
 #include "stm32f4xx.h"
 
 typedef struct
@@ -20,6 +21,7 @@ typedef struct
     IRQn_Type irq_channel;
     uint8_t preemption_priority;
     uint8_t sub_priority;
+    bool enable_interrupt;
 
 } Timer;
 

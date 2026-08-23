@@ -3,15 +3,7 @@
 // LVGL version: 9.3
 // Project name: SquareLine_Project
 
-#include "ui.h"
-#include "user/user.h"
-#include "usart/usart.h"
-#include "sensor/sensor.h"
-#include "page/page.h"
-#include "page/sensor_page/sensor_page.h"
-#include <string.h>
-#include <stdio.h>
-#include <stdbool.h>
+#include "ui_events.h"
 
 
 // function
@@ -43,9 +35,6 @@ void num_btn_pressed(lv_event_t * e){
     }
 
     const char * num_str = lv_label_get_text(label);
-
-    sprintf(buffer, "BUTTON: %s\r\n", num_str);
-    USART1_send_string(buffer);
 
     if(pin_index >= 4)
         return;
@@ -121,19 +110,15 @@ void reset(void){
 	lv_obj_clear_state(ui_Pin3, LV_STATE_CHECKED);
 }
 
-void sensor_reading_on_screen_loaded(lv_event_t * e)
-{
+void sensor_reading_on_screen_loaded(lv_event_t * e) {
 	sensor_page_start();
-
 }
 
-void sensor_reading_on_screen_unloaded(lv_event_t * e)
-{
-	// Your code here
+void sensor_reading_on_screen_unloaded(lv_event_t * e) {
+	sensor_page_stop();
 }
 
-void record_on_screen_loaded(lv_event_t * e)
-{
+void record_on_screen_loaded(lv_event_t * e) {
 	// Your code here
 }
 
@@ -147,32 +132,52 @@ void next_on_click(lv_event_t * e)
 	// Your code here
 }
 
-void setting_on_screen_loaded(lv_event_t * e)
-{
-	// Your code here
+void setting_on_screen_loaded(lv_event_t * e) {
+	Threshold threshold = get_threshold();
+	sprintf(buffer, "%d", threshold.temp_threshold);
+	lv_label_set_text(ui_TempThresValSt, buffer);
+	sprintf(buffer, "%d", threshold.hum_threshold);
+	lv_label_set_text(ui_HumThresValSt, buffer);
 }
 
-void temp_hum_on_save(lv_event_t * e)
-{
-	// Your code here
+void temp_hum_on_save(lv_event_t * e) {
+	lv_label_set_text(ui_SaveLabelSt, "Saving...");
+	lv_obj_add_state(ui_SettingPage, LV_STATE_DISABLED);
+	save_threshold();
+	lv_label_set_text(ui_SaveLabelSt, "Save");
+	lv_obj_clear_state(ui_SettingPage, LV_STATE_DISABLED);
+
 }
 
-void temp_thres_inc(lv_event_t * e)
-{
-	// Your code here
+void temp_thres_inc(lv_event_t * e) {
+	int inc_val = temp_inc(true);
+	if (inc_val != -1) {
+		sprintf(buffer, "%d", inc_val);
+		lv_label_set_text(ui_TempThresValSt, buffer);
+	}
 }
 
-void temp_thres_dec(lv_event_t * e)
-{
-	// Your code here
+void temp_thres_dec(lv_event_t * e) {
+	int inc_val = temp_inc(false);
+	if (inc_val != -1) {
+		sprintf(buffer, "%d", inc_val);
+		lv_label_set_text(ui_TempThresValSt, buffer);
+	}
 }
 
-void hum_thres_inc(lv_event_t * e)
-{
-	// Your code here
+void hum_thres_inc(lv_event_t * e) {
+	int inc_val = hum_inc(true);
+	if (inc_val != -1) {
+		sprintf(buffer, "%d", inc_val);
+		lv_label_set_text(ui_HumThresValSt, buffer);
+	}
+
 }
 
-void hum_thres_dec(lv_event_t * e)
-{
-	// Your code here
+void hum_thres_dec(lv_event_t * e) {
+	int inc_val = hum_inc(false);
+	if (inc_val != -1) {
+		sprintf(buffer, "%d", inc_val);
+		lv_label_set_text(ui_HumThresValSt, buffer);
+	}
 }

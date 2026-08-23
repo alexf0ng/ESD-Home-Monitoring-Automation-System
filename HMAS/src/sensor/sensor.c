@@ -9,19 +9,20 @@ extern char buffer[50];
 
 Dht22 temp_hum(void) {
 	Dht22 dht22 = {
-		.temp = 0.0f,
-		.hum = 0.0f,
-		.excmsgDht22 = NULL
+		.temp = 0,
+		.hum = 0,
 	};
 
-	if(!DHT22_Read()){
-		dht22.excmsgDht22 = "DHT22 read failed";
-		return dht22;
-	}
+	DHT22_Read();
 
 	dht22.hum = DHT22getHumidity();
+	sprintf(buffer, "hum = %d \r\n", (int)dht22.hum);
+	USART1_send_string(buffer);
+
 
 	dht22.temp = DHT22getTemperature();
+	sprintf(buffer, "temp = %d \r\n", (int)dht22.temp);
+	USART1_send_string(buffer);
 
 	return dht22;
 
@@ -29,23 +30,20 @@ Dht22 temp_hum(void) {
 
 Ldr light_dependent_resistor(void){
 	Ldr ldr = {
-		.ldr = 0.0f,
-		.excmsgLdr = NULL
+		.ldr = 0,
 	};
 
 	// haiya i didnt bring ldr back
-	ldr.ldr = 10.15;
+	ldr.ldr = 10;
 
 	return ldr;
 }
 
 Sensor temp_hum_ldr(void){
     Sensor sensor = {
-        .temp = 0.0f,
-        .hum = 0.0f,
-        .ldr = 0.0f,
-        .excmsgDht22 = NULL,
-        .excmsgLdr = NULL
+        .temp = 0,
+        .hum = 0,
+        .ldr = 0,
     };
 
     Dht22 dht22 = temp_hum();
@@ -54,9 +52,6 @@ Sensor temp_hum_ldr(void){
     sensor.temp = dht22.temp;
     sensor.hum = dht22.hum;
     sensor.ldr = ldr.ldr;
-
-    sensor.excmsgDht22 = dht22.excmsgDht22;
-    sensor.excmsgLdr = ldr.excmsgLdr;
 
     return sensor;
 }

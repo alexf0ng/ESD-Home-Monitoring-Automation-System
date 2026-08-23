@@ -44,149 +44,54 @@ void DHT22_Init(void){
 }
 
 
-//void DHT22_Read(void){
-//  uint8_t dataIndex = 0;
-//  uint8_t counter = 7;
-//  uint8_t currByte = 0;
-//  uint8_t index = 0;
-//  uint32_t startTime = 0;
-//
-//  /* reset data holder */
-//  for(index=0; index < 6; index++){
-//    DHT22data[index] = 0x00;
-//  }
-//
-//  /* mcu sends start signal to sensor */
-//  DHT22pinOut();
-//  GPIO_ResetBits(DHT22_GPIO, DHT22_DATA_PIN);
-//  TIM_SetCounter(DHT22_TIM, 0);
-////  printf("sss\n");
-//  /* wait for at least 20 mSecs */
-//  while(TIM_GetCounter(DHT22_TIM) < 20000);
-////  printf("ttt\n");
-//  /* switch to input and wait for sensor response */
-//  DHT22pinIn();
-////  printf("resss\n");
-//  while(GPIO_ReadInputDataBit(DHT22_GPIO, DHT22_DATA_PIN));
-//
-//  /* DHT22 sends response signal */
-//  while(!GPIO_ReadInputDataBit(DHT22_GPIO, DHT22_DATA_PIN));
-//  while(GPIO_ReadInputDataBit(DHT22_GPIO, DHT22_DATA_PIN));
-//
-//  /* DHT22 sends, finally, data */
-//  for (dataIndex=0; dataIndex<40; dataIndex++) {
-//    TIM_SetCounter(DHT22_TIM, 0);
-//    while(!GPIO_ReadInputDataBit(DHT22_GPIO, DHT22_DATA_PIN));
-//    startTime = TIM_GetCounter(DHT22_TIM);
-//    while(GPIO_ReadInputDataBit(DHT22_GPIO, DHT22_DATA_PIN));
-//
-//    if ((TIM_GetCounter(DHT22_TIM) - startTime) > 40){
-//      DHT22data[currByte] |= (1 << counter);
-//    }
-//
-//    if (counter == 0) {   // next byte?
-//      counter = 7;        // restart at MSB
-//      currByte++;         // next byte!
-//    } else {
-//      counter--;
-//    }
-//
-//  }
-//}
+void DHT22_Read(void){
+  uint8_t dataIndex = 0;
+  uint8_t counter = 7;
+  uint8_t currByte = 0;
+  uint8_t index = 0;
+  uint32_t startTime = 0;
 
-bool DHT22_Read(void)
-{
-    uint8_t dataIndex = 0;
-    uint8_t counter = 7;
-    uint8_t currByte = 0;
-    uint8_t index = 0;
-    uint32_t startTime;
+  /* reset data holder */
+  for(index=0; index < 6; index++){
+    DHT22data[index] = 0x00;
+  }
 
-    for(index = 0; index < 6; index++)
-    {
-        DHT22data[index] = 0x00;
-    }
+  /* mcu sends start signal to sensor */
+  DHT22pinOut();
+  GPIO_ResetBits(DHT22_GPIO, DHT22_DATA_PIN);
+  TIM_SetCounter(DHT22_TIM, 0);
+//  printf("sss\n");
+  /* wait for at least 20 mSecs */
+  while(TIM_GetCounter(DHT22_TIM) < 20000);
+//  printf("ttt\n");
+  /* switch to input and wait for sensor response */
+  DHT22pinIn();
+//  printf("resss\n");
+  while(GPIO_ReadInputDataBit(DHT22_GPIO, DHT22_DATA_PIN));
 
-    DHT22pinOut();
+  /* DHT22 sends response signal */
+  while(!GPIO_ReadInputDataBit(DHT22_GPIO, DHT22_DATA_PIN));
+  while(GPIO_ReadInputDataBit(DHT22_GPIO, DHT22_DATA_PIN));
 
-    GPIO_ResetBits(DHT22_GPIO, DHT22_DATA_PIN);
-
+  /* DHT22 sends, finally, data */
+  for (dataIndex=0; dataIndex<40; dataIndex++) {
     TIM_SetCounter(DHT22_TIM, 0);
+    while(!GPIO_ReadInputDataBit(DHT22_GPIO, DHT22_DATA_PIN));
+    startTime = TIM_GetCounter(DHT22_TIM);
+    while(GPIO_ReadInputDataBit(DHT22_GPIO, DHT22_DATA_PIN));
 
-    /* Wait at least 20 ms */
-    while(TIM_GetCounter(DHT22_TIM) < 20000)
-    {
-        if(TIM_GetCounter(DHT22_TIM) > 25000)
-            return false;
+    if ((TIM_GetCounter(DHT22_TIM) - startTime) > 40){
+      DHT22data[currByte] |= (1 << counter);
     }
 
-    DHT22pinIn();
-
-    /* Wait for DHT22 to pull LOW */
-    TIM_SetCounter(DHT22_TIM, 0);
-
-    while(GPIO_ReadInputDataBit(DHT22_GPIO, DHT22_DATA_PIN))
-    {
-        if(TIM_GetCounter(DHT22_TIM) > 5000)
-            return false;
+    if (counter == 0) {   // next byte?
+      counter = 7;        // restart at MSB
+      currByte++;         // next byte!
+    } else {
+      counter--;
     }
 
-    /* Wait for DHT22 to pull HIGH */
-    TIM_SetCounter(DHT22_TIM, 0);
-
-    while(!GPIO_ReadInputDataBit(DHT22_GPIO, DHT22_DATA_PIN))
-    {
-        if(TIM_GetCounter(DHT22_TIM) > 5000)
-            return false;
-    }
-
-    /* Wait for DHT22 to pull LOW */
-    TIM_SetCounter(DHT22_TIM, 0);
-
-    while(GPIO_ReadInputDataBit(DHT22_GPIO, DHT22_DATA_PIN))
-    {
-        if(TIM_GetCounter(DHT22_TIM) > 5000)
-            return false;
-    }
-
-    /* Read 40 bits */
-    for(dataIndex = 0; dataIndex < 40; dataIndex++)
-    {
-        TIM_SetCounter(DHT22_TIM, 0);
-
-        /* Wait for LOW -> HIGH */
-        while(!GPIO_ReadInputDataBit(DHT22_GPIO, DHT22_DATA_PIN))
-        {
-            if(TIM_GetCounter(DHT22_TIM) > 5000)
-                return false;
-        }
-
-        startTime = TIM_GetCounter(DHT22_TIM);
-
-        /* Wait for HIGH -> LOW */
-        while(GPIO_ReadInputDataBit(DHT22_GPIO, DHT22_DATA_PIN))
-        {
-            if(TIM_GetCounter(DHT22_TIM) > 5000)
-                return false;
-        }
-
-        if((TIM_GetCounter(DHT22_TIM) - startTime) > 40)
-        {
-            DHT22data[currByte] |= (1 << counter);
-        }
-
-        if(counter == 0)
-        {
-            counter = 7;
-            currByte++;
-        }
-        else
-        {
-            counter--;
-        }
-    }
-
-    return true;
+  }
 }
 
 //-----------------DHT22 get temperature value ----------------------------------//
