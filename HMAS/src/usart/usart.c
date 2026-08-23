@@ -4,9 +4,7 @@
  *  Created on: Aug 22, 2026
  *      Author: user
  */
-#include "stm32f4xx_usart.h"
 #include "usart.h"
-#include <string.h>
 
 void USART1_init(Usart1 *usart1) {
 	GPIO_InitTypeDef GPIO_InitStruct;

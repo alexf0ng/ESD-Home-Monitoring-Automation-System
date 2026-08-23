@@ -13,6 +13,7 @@ extern "C" {
 // SCREEN: ui_RecordPage
 extern void ui_RecordPage_screen_init(void);
 extern void ui_RecordPage_screen_destroy(void);
+extern void ui_event_RecordPage(lv_event_t * e);
 extern lv_obj_t * ui_RecordPage;
 extern lv_obj_t * ui_RecordLabelR;
 extern lv_obj_t * ui_RecordContainerR;
@@ -32,11 +33,16 @@ extern lv_obj_t * ui_RecordPanel5R;
 extern lv_obj_t * ui_RecordDate5R;
 extern lv_obj_t * ui_RecordData5R;
 extern lv_obj_t * ui_BottomNavR;
+extern void ui_event_BottomNavDashboardR(lv_event_t * e);
 extern lv_obj_t * ui_BottomNavDashboardR;
+extern void ui_event_BottomNavSensorR(lv_event_t * e);
 extern lv_obj_t * ui_BottomNavSensorR;
 extern lv_obj_t * ui_BottomNavRecordR;
+extern void ui_event_BottomNavSettingR(lv_event_t * e);
 extern lv_obj_t * ui_BottomNavSettingR;
+extern void ui_event_PrevLabelR(lv_event_t * e);
 extern lv_obj_t * ui_PrevLabelR;
+extern void ui_event_PageLabelR(lv_event_t * e);
 extern lv_obj_t * ui_PageLabelR;
 extern lv_obj_t * ui_NextLabelR;
 // CUSTOM VARIABLES

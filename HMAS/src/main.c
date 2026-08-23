@@ -50,6 +50,7 @@ SOFTWARE.
 #include "usart/usart.h"
 #include "gpio/gpio.h"
 #include "timer/timer.h"
+#include "page/page.h"
 
 /* LCD resolution in Landscape */
 #define LCD_WIDTH   320
@@ -138,13 +139,7 @@ void my_touchpad_read(lv_indev_t * indev, lv_indev_data_t * data)
 
 static void switch_to_main(lv_timer_t *timer)
 {
-	_ui_screen_change(
-		&ui_SettingPage,
-		LV_SCR_LOAD_ANIM_FADE_ON,
-		500,
-		0,
-		&ui_SettingPage_screen_init
-	);
+	password();
 
     lv_timer_del(timer);
 }
@@ -182,6 +177,9 @@ int main(void)
 	// touch screen
 	TM_STMPE811_Init();
 	USART1_send_string("TMSTMPE811 Success!\r\n");
+
+	// dht22 ldr init
+	DHT22_Init();
 
 
     USART1_send_string("Initialization Finish!\r\n");
@@ -227,8 +225,6 @@ int main(void)
         5000,
         NULL
     );
-
-
 
 
     while (1) {

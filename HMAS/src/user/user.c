@@ -5,8 +5,6 @@
  *      Author: user
  */
 #include "user.h"
-#include <string.h>
-#include <stdbool.h>
 
 void user_init(User *user)
 {

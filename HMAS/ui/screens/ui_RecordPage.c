@@ -56,6 +56,59 @@ lv_obj_t * ui_PrevLabelR = NULL;
 lv_obj_t * ui_PageLabelR = NULL;
 lv_obj_t * ui_NextLabelR = NULL;
 // event funtions
+void ui_event_RecordPage(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+
+    if(event_code == LV_EVENT_SCREEN_LOADED) {
+        record_on_screen_loaded(e);
+    }
+}
+
+void ui_event_BottomNavDashboardR(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+
+    if(event_code == LV_EVENT_CLICKED) {
+        _ui_screen_change(&ui_DashboardPage, LV_SCR_LOAD_ANIM_FADE_ON, 500, 0, &ui_DashboardPage_screen_init);
+    }
+}
+
+void ui_event_BottomNavSensorR(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+
+    if(event_code == LV_EVENT_CLICKED) {
+        _ui_screen_change(&ui_SensorPage, LV_SCR_LOAD_ANIM_FADE_ON, 500, 0, &ui_SensorPage_screen_init);
+    }
+}
+
+void ui_event_BottomNavSettingR(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+
+    if(event_code == LV_EVENT_CLICKED) {
+        _ui_screen_change(&ui_SettingPage, LV_SCR_LOAD_ANIM_FADE_ON, 500, 0, &ui_SettingPage_screen_init);
+    }
+}
+
+void ui_event_PrevLabelR(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+
+    if(event_code == LV_EVENT_CLICKED) {
+        prev_on_click(e);
+    }
+}
+
+void ui_event_PageLabelR(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+
+    if(event_code == LV_EVENT_CLICKED) {
+        next_on_click(e);
+    }
+}
 
 // build funtions
 
@@ -301,6 +354,7 @@ void ui_RecordPage_screen_init(void)
     lv_obj_set_y(ui_BottomNavDashboardR, 105);
     lv_obj_set_align(ui_BottomNavDashboardR, LV_ALIGN_CENTER);
     lv_label_set_text(ui_BottomNavDashboardR, "HOME");
+    lv_obj_add_flag(ui_BottomNavDashboardR, LV_OBJ_FLAG_CLICKABLE);     /// Flags
     lv_obj_set_style_text_color(ui_BottomNavDashboardR, lv_color_hex(0x94A3B8), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_opa(ui_BottomNavDashboardR, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_font(ui_BottomNavDashboardR, &lv_font_montserrat_10, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -312,6 +366,7 @@ void ui_RecordPage_screen_init(void)
     lv_obj_set_y(ui_BottomNavSensorR, 105);
     lv_obj_set_align(ui_BottomNavSensorR, LV_ALIGN_CENTER);
     lv_label_set_text(ui_BottomNavSensorR, "SENSOR");
+    lv_obj_add_flag(ui_BottomNavSensorR, LV_OBJ_FLAG_CLICKABLE);     /// Flags
     lv_obj_set_style_text_color(ui_BottomNavSensorR, lv_color_hex(0x94A3B8), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_opa(ui_BottomNavSensorR, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_font(ui_BottomNavSensorR, &lv_font_montserrat_10, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -334,6 +389,7 @@ void ui_RecordPage_screen_init(void)
     lv_obj_set_y(ui_BottomNavSettingR, 105);
     lv_obj_set_align(ui_BottomNavSettingR, LV_ALIGN_CENTER);
     lv_label_set_text(ui_BottomNavSettingR, "SETTING");
+    lv_obj_add_flag(ui_BottomNavSettingR, LV_OBJ_FLAG_CLICKABLE);     /// Flags
     lv_obj_set_style_text_color(ui_BottomNavSettingR, lv_color_hex(0x94A3B8), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_opa(ui_BottomNavSettingR, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_font(ui_BottomNavSettingR, &lv_font_montserrat_10, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -367,6 +423,12 @@ void ui_RecordPage_screen_init(void)
     lv_obj_set_style_text_opa(ui_NextLabelR, 200, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_font(ui_NextLabelR, &lv_font_montserrat_8, LV_PART_MAIN | LV_STATE_DEFAULT);
 
+    lv_obj_add_event_cb(ui_BottomNavDashboardR, ui_event_BottomNavDashboardR, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(ui_BottomNavSensorR, ui_event_BottomNavSensorR, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(ui_BottomNavSettingR, ui_event_BottomNavSettingR, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(ui_PrevLabelR, ui_event_PrevLabelR, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(ui_PageLabelR, ui_event_PageLabelR, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(ui_RecordPage, ui_event_RecordPage, LV_EVENT_ALL, NULL);
     uic_RecordPage = ui_RecordPage;
     uic_RecordLabelR = ui_RecordLabelR;
     uic_RecordContainerR = ui_RecordContainerR;

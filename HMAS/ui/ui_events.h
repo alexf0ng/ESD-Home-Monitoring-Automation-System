@@ -13,6 +13,17 @@ extern "C" {
 void num_btn_pressed(lv_event_t * e);
 void enter_btn_pressed(lv_event_t * e);
 void clear_btn_pressed(lv_event_t * e);
+void sensor_reading_on_screen_loaded(lv_event_t * e);
+void sensor_reading_on_screen_unloaded(lv_event_t * e);
+void record_on_screen_loaded(lv_event_t * e);
+void prev_on_click(lv_event_t * e);
+void next_on_click(lv_event_t * e);
+void setting_on_screen_loaded(lv_event_t * e);
+void temp_hum_on_save(lv_event_t * e);
+void temp_thres_inc(lv_event_t * e);
+void temp_thres_dec(lv_event_t * e);
+void hum_thres_inc(lv_event_t * e);
+void hum_thres_dec(lv_event_t * e);
 
 #ifdef __cplusplus
 } /*extern "C"*/

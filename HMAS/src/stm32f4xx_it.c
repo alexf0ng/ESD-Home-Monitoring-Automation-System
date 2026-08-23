@@ -157,26 +157,6 @@ void TIM3_IRQHandler(void){
 	if(TIM_GetITStatus(TIM3, TIM_IT_Update) == SET){
 		TIM_ClearITPendingBit(TIM3, TIM_IT_Update);
 		lv_tick_inc(1);
-		if(GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_5) == SET)
-		        {
-		            if(button_hold_ms < 5000)
-		            {
-		                button_hold_ms++;
-		            }
-
-		            if(button_hold_ms >= 5000 &&
-		                           !button_5s_triggered)
-		                        {
-		                            button_held_5s = true;
-		                            button_5s_triggered = true;
-		                        }
-		        }
-		        else
-		        {
-		            /* Button released */
-		            button_hold_ms = 0;
-		            button_5s_triggered = false;
-		        }
 	}
 }
 /**
@@ -194,4 +174,3 @@ void TIM3_IRQHandler(void){
 
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
-;

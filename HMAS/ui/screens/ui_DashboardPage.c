@@ -40,6 +40,68 @@ lv_obj_t * ui_BottomNavSensorD = NULL;
 lv_obj_t * ui_BottomNavRecordD = NULL;
 lv_obj_t * ui_BottomNavSettingD = NULL;
 // event funtions
+void ui_event_SensorPanelD(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+
+    if(event_code == LV_EVENT_CLICKED) {
+        _ui_screen_change(&ui_SensorPage, LV_SCR_LOAD_ANIM_FADE_ON, 500, 0, &ui_SensorPage_screen_init);
+    }
+}
+
+void ui_event_RecordPanelD(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+
+    if(event_code == LV_EVENT_CLICKED) {
+        _ui_screen_change(&ui_RecordPage, LV_SCR_LOAD_ANIM_FADE_ON, 500, 0, &ui_RecordPage_screen_init);
+    }
+}
+
+void ui_event_SettingPanelD(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+
+    if(event_code == LV_EVENT_CLICKED) {
+        _ui_screen_change(&ui_SettingPage, LV_SCR_LOAD_ANIM_FADE_ON, 500, 0, &ui_SettingPage_screen_init);
+    }
+}
+
+void ui_event_LogoutPanelD(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+
+    if(event_code == LV_EVENT_CLICKED) {
+        _ui_screen_change(&ui_PasswordPage, LV_SCR_LOAD_ANIM_FADE_ON, 500, 0, &ui_PasswordPage_screen_init);
+    }
+}
+
+void ui_event_BottomNavSensorD(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+
+    if(event_code == LV_EVENT_SHORT_CLICKED) {
+        _ui_screen_change(&ui_SensorPage, LV_SCR_LOAD_ANIM_FADE_ON, 500, 0, &ui_SensorPage_screen_init);
+    }
+}
+
+void ui_event_BottomNavRecordD(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+
+    if(event_code == LV_EVENT_CLICKED) {
+        _ui_screen_change(&ui_RecordPage, LV_SCR_LOAD_ANIM_FADE_ON, 500, 0, &ui_RecordPage_screen_init);
+    }
+}
+
+void ui_event_BottomNavSettingD(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+
+    if(event_code == LV_EVENT_CLICKED) {
+        _ui_screen_change(&ui_SettingPage, LV_SCR_LOAD_ANIM_FADE_ON, 500, 0, &ui_SettingPage_screen_init);
+    }
+}
 
 // build funtions
 
@@ -262,6 +324,7 @@ void ui_DashboardPage_screen_init(void)
     lv_obj_set_y(ui_BottomNavSensorD, 105);
     lv_obj_set_align(ui_BottomNavSensorD, LV_ALIGN_CENTER);
     lv_label_set_text(ui_BottomNavSensorD, "SENSOR");
+    lv_obj_add_flag(ui_BottomNavSensorD, LV_OBJ_FLAG_CLICKABLE);     /// Flags
     lv_obj_set_style_text_color(ui_BottomNavSensorD, lv_color_hex(0x94A3B8), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_opa(ui_BottomNavSensorD, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_font(ui_BottomNavSensorD, &lv_font_montserrat_10, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -273,6 +336,7 @@ void ui_DashboardPage_screen_init(void)
     lv_obj_set_y(ui_BottomNavRecordD, 105);
     lv_obj_set_align(ui_BottomNavRecordD, LV_ALIGN_CENTER);
     lv_label_set_text(ui_BottomNavRecordD, "RECORD");
+    lv_obj_add_flag(ui_BottomNavRecordD, LV_OBJ_FLAG_CLICKABLE);     /// Flags
     lv_obj_set_style_text_color(ui_BottomNavRecordD, lv_color_hex(0x94A3B8), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_opa(ui_BottomNavRecordD, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_font(ui_BottomNavRecordD, &lv_font_montserrat_10, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -284,10 +348,18 @@ void ui_DashboardPage_screen_init(void)
     lv_obj_set_y(ui_BottomNavSettingD, 105);
     lv_obj_set_align(ui_BottomNavSettingD, LV_ALIGN_CENTER);
     lv_label_set_text(ui_BottomNavSettingD, "SETTING");
+    lv_obj_add_flag(ui_BottomNavSettingD, LV_OBJ_FLAG_CLICKABLE);     /// Flags
     lv_obj_set_style_text_color(ui_BottomNavSettingD, lv_color_hex(0x94A3B8), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_opa(ui_BottomNavSettingD, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_font(ui_BottomNavSettingD, &lv_font_montserrat_10, LV_PART_MAIN | LV_STATE_DEFAULT);
 
+    lv_obj_add_event_cb(ui_SensorPanelD, ui_event_SensorPanelD, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(ui_RecordPanelD, ui_event_RecordPanelD, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(ui_SettingPanelD, ui_event_SettingPanelD, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(ui_LogoutPanelD, ui_event_LogoutPanelD, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(ui_BottomNavSensorD, ui_event_BottomNavSensorD, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(ui_BottomNavRecordD, ui_event_BottomNavRecordD, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(ui_BottomNavSettingD, ui_event_BottomNavSettingD, LV_EVENT_ALL, NULL);
     uic_SensorPanelD = ui_SensorPanelD;
     uic_SensorLabelD = ui_SensorLabelD;
     uic_RecordPanelD = ui_RecordPanelD;

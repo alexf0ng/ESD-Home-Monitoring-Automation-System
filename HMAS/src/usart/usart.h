@@ -13,6 +13,7 @@
 
 #include <stdint.h>
 #include "stm32f4xx.h"
+#include "stm32f4xx_usart.h"
 
 typedef struct {
     GPIO_TypeDef *port;

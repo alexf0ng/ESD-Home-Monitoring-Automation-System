@@ -6,6 +6,9 @@
 #include "ui.h"
 #include "user/user.h"
 #include "usart/usart.h"
+#include "sensor/sensor.h"
+#include "page/page.h"
+#include "page/sensor_page/sensor_page.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdbool.h>
@@ -30,99 +33,146 @@ extern User user;
 // not mixing authentication here
 // here more doing input validation
 void num_btn_pressed(lv_event_t * e){
-//    lv_obj_t * btn = lv_event_get_target(e);
-//    lv_obj_t * label = lv_obj_get_child(btn, 0);
-//
-//    if(label == NULL)
-//    {
-//        USART1_send_string("ERROR: No label\r\n");
-//        return;
-//    }
-//
-//    const char * num_str = lv_label_get_text(label);
-//
-//    sprintf(buffer, "BUTTON: %s\r\n", num_str);
-//    USART1_send_string(buffer);
-//
-//    if(pin_index >= 4)
-//        return;
-//
-//    entered_pin[pin_index] = num_str[0];
-//    entered_pin[pin_index + 1] = '\0';
-//
-//    pin_index++;
-//
-//    sprintf(buffer, "PIN: %s\r\n", entered_pin);
-//    USART1_send_string(buffer);
-//
-//    if(pin_index == 1)
-//        lv_obj_add_state(ui_Pin0, LV_STATE_CHECKED);
-//    else if(pin_index == 2)
-//        lv_obj_add_state(ui_Pin1, LV_STATE_CHECKED);
-//    else if(pin_index == 3)
-//        lv_obj_add_state(ui_Pin2, LV_STATE_CHECKED);
-//    else if(pin_index == 4)
-//        lv_obj_add_state(ui_Pin3, LV_STATE_CHECKED);
+    lv_obj_t * btn = lv_event_get_target(e);
+    lv_obj_t * label = lv_obj_get_child(btn, 0);
+
+    if(label == NULL)
+    {
+        USART1_send_string("ERROR: No label\r\n");
+        return;
+    }
+
+    const char * num_str = lv_label_get_text(label);
+
+    sprintf(buffer, "BUTTON: %s\r\n", num_str);
+    USART1_send_string(buffer);
+
+    if(pin_index >= 4)
+        return;
+
+    entered_pin[pin_index] = num_str[0];
+    entered_pin[pin_index + 1] = '\0';
+
+    pin_index++;
+
+    sprintf(buffer, "PIN: %s\r\n", entered_pin);
+    USART1_send_string(buffer);
+
+    if(pin_index == 1)
+        lv_obj_add_state(ui_Pin0, LV_STATE_CHECKED);
+    else if(pin_index == 2)
+        lv_obj_add_state(ui_Pin1, LV_STATE_CHECKED);
+    else if(pin_index == 3)
+        lv_obj_add_state(ui_Pin2, LV_STATE_CHECKED);
+    else if(pin_index == 4)
+        lv_obj_add_state(ui_Pin3, LV_STATE_CHECKED);
 }
 
 void enter_btn_pressed(lv_event_t * e){
-//	if(pin_index != 4)
-//		return;
-//
-//	if(!password_reset_mode){
-//		if(user_login(&user, entered_pin)) {
-//			lv_label_set_text(ui_statusLabel, "Success!");
-//			lv_obj_clear_state(ui_statusLabel, LV_STATE_USER_1);
-//			reset();
-//			// go to main
-//		}else{
-//			lv_label_set_text(ui_statusLabel, "Incorrect Password");
-//			lv_obj_add_state(ui_statusLabel, LV_STATE_USER_1);
-//			reset();
-//		}
-//	}else{
-//		user_change_password(&user, entered_pin);
-//
-//		lv_label_set_text(ui_statusLabel, "Password Changed!");
-//		lv_obj_clear_state(ui_statusLabel, LV_STATE_USER_1);
-//		password_reset_mode = false;
-//		reset();
-//		// go to main
-//	}
+	if(pin_index != 4)
+		return;
 
+	if(!password_reset_mode){
+		if(user_login(&user, entered_pin)) {
+			lv_label_set_text(ui_StatusLabel, "Success!");
+			lv_obj_clear_state(ui_StatusLabel, LV_STATE_USER_1);
+			reset();
+			dashboard();
+		}else{
+			lv_label_set_text(ui_StatusLabel, "Incorrect Password");
+			lv_obj_add_state(ui_StatusLabel, LV_STATE_USER_1);
+			reset();
+		}
+	}else{
+		user_change_password(&user, entered_pin);
 
+		lv_label_set_text(ui_StatusLabel, "Password Changed!");
+		lv_obj_clear_state(ui_StatusLabel, LV_STATE_USER_1);
+		password_reset_mode = false;
+		reset();
+		dashboard();
+	}
 }
 
 void clear_btn_pressed(lv_event_t * e){
-    //reset();
-
-//    lv_label_set_text(ui_statusLabel, password_reset_mode ? "Enter New Password" : "Enter Password");
-//    lv_obj_clear_state(ui_statusLabel, LV_STATE_USER_1);
+    reset();
+    lv_label_set_text(ui_StatusLabel, password_reset_mode ? "Enter New Password" : "Enter Password");
+    lv_obj_clear_state(ui_StatusLabel, LV_STATE_USER_1);
 }
 
 // not event function, just reset
 // since utilize same page for reset password, change the label only
 void ui_reset_password(void){
-//	reset();
-//	password_reset_mode = true;
-//	_ui_screen_change(
-//		&ui_Screen2,
-//		LV_SCR_LOAD_ANIM_FADE_ON,
-//		500,
-//		0,
-//		&ui_Screen2_screen_init
-//	);
-//	lv_label_set_text(ui_statusLabel, "Enter New Password");
-//	lv_obj_clear_state(ui_statusLabel, LV_STATE_USER_1);
+	reset();
+	password_reset_mode = true;
+	password();
+	lv_label_set_text(ui_StatusLabel, "Enter New Password");
+	lv_obj_clear_state(ui_StatusLabel, LV_STATE_USER_1);
 }
 
 // reset everything
 void reset(void){
-//	pin_index = 0;
-//	entered_pin[0] = '\0';
-//
-//	lv_obj_clear_state(ui_Pin0, LV_STATE_CHECKED);
-//	lv_obj_clear_state(ui_Pin1, LV_STATE_CHECKED);
-//	lv_obj_clear_state(ui_Pin2, LV_STATE_CHECKED);
-//	lv_obj_clear_state(ui_Pin3, LV_STATE_CHECKED);
+	pin_index = 0;
+	entered_pin[0] = '\0';
+
+	lv_obj_clear_state(ui_Pin0, LV_STATE_CHECKED);
+	lv_obj_clear_state(ui_Pin1, LV_STATE_CHECKED);
+	lv_obj_clear_state(ui_Pin2, LV_STATE_CHECKED);
+	lv_obj_clear_state(ui_Pin3, LV_STATE_CHECKED);
+}
+
+void sensor_reading_on_screen_loaded(lv_event_t * e)
+{
+	sensor_page_start();
+
+}
+
+void sensor_reading_on_screen_unloaded(lv_event_t * e)
+{
+	// Your code here
+}
+
+void record_on_screen_loaded(lv_event_t * e)
+{
+	// Your code here
+}
+
+void prev_on_click(lv_event_t * e)
+{
+	// Your code here
+}
+
+void next_on_click(lv_event_t * e)
+{
+	// Your code here
+}
+
+void setting_on_screen_loaded(lv_event_t * e)
+{
+	// Your code here
+}
+
+void temp_hum_on_save(lv_event_t * e)
+{
+	// Your code here
+}
+
+void temp_thres_inc(lv_event_t * e)
+{
+	// Your code here
+}
+
+void temp_thres_dec(lv_event_t * e)
+{
+	// Your code here
+}
+
+void hum_thres_inc(lv_event_t * e)
+{
+	// Your code here
+}
+
+void hum_thres_dec(lv_event_t * e)
+{
+	// Your code here
 }

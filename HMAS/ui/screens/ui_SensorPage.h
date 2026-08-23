@@ -13,6 +13,7 @@ extern "C" {
 // SCREEN: ui_SensorPage
 extern void ui_SensorPage_screen_init(void);
 extern void ui_SensorPage_screen_destroy(void);
+extern void ui_event_SensorPage(lv_event_t * e);
 extern lv_obj_t * ui_SensorPage;
 extern lv_obj_t * ui_SensorLabelS;
 extern lv_obj_t * ui_TemperaturePanelS;
@@ -36,10 +37,24 @@ extern lv_obj_t * ui_SaveLabelS;
 extern lv_obj_t * ui_SaveS;
 extern lv_obj_t * ui_SaveTotalLabelS;
 extern lv_obj_t * ui_BottomNavS;
+extern void ui_event_BottomNavDashboardS(lv_event_t * e);
 extern lv_obj_t * ui_BottomNavDashboardS;
 extern lv_obj_t * ui_BottomNavSensorS;
+extern void ui_event_BottomNavRecordS(lv_event_t * e);
 extern lv_obj_t * ui_BottomNavRecordS;
+extern void ui_event_BottomNavSettingS(lv_event_t * e);
 extern lv_obj_t * ui_BottomNavSettingS;
+extern void ui_event_ErrorPanelS(lv_event_t * e);
+extern lv_obj_t * ui_ErrorPanelS;
+extern lv_obj_t * ui_Label1;
+extern lv_obj_t * ui_ErrorModalS;
+extern void ui_event_ErrorOKBtnS(lv_event_t * e);
+extern lv_obj_t * ui_ErrorOKBtnS;
+extern lv_obj_t * ui_ErrorOKLabelS;
+extern lv_obj_t * ui_ErrorPanelTopS;
+extern lv_obj_t * ui_ErrorLabelS;
+extern lv_obj_t * ui_ErrorLabel1S;
+extern lv_obj_t * ui_ErrorLabel2S;
 // CUSTOM VARIABLES
 extern lv_obj_t * uic_SensorPage;
 extern lv_obj_t * uic_SensorLabelS;
@@ -66,6 +81,14 @@ extern lv_obj_t * uic_BottomNavDashboardS;
 extern lv_obj_t * uic_BottomNavSensorS;
 extern lv_obj_t * uic_BottomNavRecordS;
 extern lv_obj_t * uic_BottomNavSettingS;
+extern lv_obj_t * uic_ErrorPanelS;
+extern lv_obj_t * uic_ErrorModalS;
+extern lv_obj_t * uic_ErrorOKBtnS;
+extern lv_obj_t * uic_ErrorOKLabelS;
+extern lv_obj_t * uic_ErrorPanelTopS;
+extern lv_obj_t * uic_ErrorLabelS;
+extern lv_obj_t * uic_ErrorLabel1S;
+extern lv_obj_t * uic_ErrorLabel2S;
 
 #ifdef __cplusplus
 } /*extern "C"*/
