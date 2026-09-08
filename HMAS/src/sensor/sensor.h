@@ -10,6 +10,7 @@
 
 #include "usart/usart.h"
 #include "dht22/dht22.h"
+#include "ldr/ldr.h"
 #include "usart/usart.h"
 #include <stdio.h>
 #include <stddef.h>

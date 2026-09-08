@@ -27,6 +27,7 @@
 #include "stm32f4xx.h"
 #include <string.h>
 #include <stdio.h>
+#include "usart/usart.h"
 
 /* Private typedef -----------------------------------------------------------*/
 typedef struct

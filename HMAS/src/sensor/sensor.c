@@ -32,10 +32,9 @@ Ldr light_dependent_resistor(void){
 	Ldr ldr = {
 		.ldr = 0,
 	};
-
-	// haiya i didnt bring ldr back
-	ldr.ldr = 10;
-
+	ldr.ldr = LDR_ReadIntensityPercent();
+	sprintf(buffer, "ldr = %d \r\n", (int)ldr.ldr);
+	USART1_send_string(buffer);
 	return ldr;
 }
 

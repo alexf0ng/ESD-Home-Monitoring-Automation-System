@@ -9,6 +9,7 @@
 
 static lv_timer_t *sensor_timer = NULL;
 extern char buffer[50];
+static int save_count = 0;
 
 void sensor_page_update(void)
 {
@@ -17,10 +18,8 @@ void sensor_page_update(void)
 
     sprintf(buffer, "%d", (int)sensor.temp);
     lv_label_set_text(ui_TemperatureS, buffer);
-    USART1_send_string(buffer);
     sprintf(buffer, "%d", (int)sensor.hum);
     lv_label_set_text(ui_HumidityS, buffer);
-    USART1_send_string(buffer);
     sprintf(buffer, "%d", (int)sensor.ldr);
     lv_label_set_text(ui_IntensityS, buffer);
 
@@ -28,6 +27,16 @@ void sensor_page_update(void)
     GPIO_openObLED(obled.pg13, obled.pg14);
 
     // save to nand flash here
+    save_count++;
+    sprintf(buffer, "%d", save_count);
+    lv_label_set_text(ui_SaveS, buffer);
+
+    if(save_count >= 5) {
+    	// save to nand
+
+    	save_count = 0;
+    }
+
 }
 
 static void sensor_page_timer_callback(lv_timer_t *timer){
@@ -38,6 +47,8 @@ static void sensor_page_timer_callback(lv_timer_t *timer){
 
 void sensor_page_start(void){
 	// the page loaded when you navigate in
+	sprintf(buffer, "%d", save_count);
+	lv_label_set_text(ui_SaveS, buffer);
     sensor_page_update();
 
     if(sensor_timer == NULL){

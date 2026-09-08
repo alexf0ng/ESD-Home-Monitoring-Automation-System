@@ -157,10 +157,16 @@ int main(void)
 
 	// dht22 ldr init
 	DHT22_Init();
+	LDR_Init();
 	USART1_send_string("DHT22 Initialize Success!\r\n");
 
 	// threshold value init
 	temp_hum_threshold_init(threshold);
+
+	// nand
+	FMC_NAND_Init();
+
+	FMC_NAND_Test();
 
     USART1_send_string("Initialization Finish!\r\n");
     screen_init();
@@ -172,14 +178,8 @@ int main(void)
         5000,
         NULL
     );
-
-
     while (1) {
-
 		lv_timer_handler();
-
-
-
 
     }
 }

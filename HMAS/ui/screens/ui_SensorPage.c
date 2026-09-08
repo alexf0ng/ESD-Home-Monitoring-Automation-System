@@ -188,7 +188,6 @@ void ui_SensorPage_screen_init(void)
     lv_image_set_src(ui_TemperatureImageS, &ui_img_temperature_png);
     lv_obj_set_width(ui_TemperatureImageS, LV_SIZE_CONTENT);   /// 1
     lv_obj_set_height(ui_TemperatureImageS, LV_SIZE_CONTENT);    /// 1
-    lv_obj_set_x(ui_TemperatureImageS, -2);
     lv_obj_set_y(ui_TemperatureImageS, -10);
     lv_obj_set_align(ui_TemperatureImageS, LV_ALIGN_CENTER);
     lv_obj_add_flag(ui_TemperatureImageS, LV_OBJ_FLAG_CLICKABLE);     /// Flags
