@@ -24,16 +24,16 @@ void sensor_page_update(void){
 
     ObLed obled = compare((int)sensor.temp, (int)sensor.hum);
     GPIO_openObLED(obled.pg13, obled.pg14);
-
     // save to nand flash here
+    NAND_log_add_record((int16_t)sensor.temp, (uint8_t)sensor.hum, (uint16_t)sensor.ldr);
     save_count++;
     sprintf(buffer, "%d", save_count);
     lv_label_set_text(ui_SaveS, buffer);
 
     if(save_count >= 5) {
-    	// save to nand
-
     	save_count = 0;
+    	sprintf(buffer, "%d", save_count);
+	    lv_label_set_text(ui_SaveS, buffer);
     }
 
 }

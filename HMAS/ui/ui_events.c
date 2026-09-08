@@ -5,21 +5,8 @@
 
 #include "ui_events.h"
 
-
-// function
-void num_btn_pressed(lv_event_t * e);
-void enter_btn_pressed(lv_event_t * e);
-void clear_btn_pressed(lv_event_t * e);
-void ui_reset_password(void);
-void reset(void);
-// local
-char entered_pin[5] = "";
-uint8_t pin_index = 0;
-static bool password_reset_mode = false;
-
 // from main code
 extern char buffer[50];
-extern User user;
 
 // here just handle ui stuff only
 // not mixing authentication here
@@ -35,78 +22,15 @@ void num_btn_pressed(lv_event_t * e){
 
     const char * num_str = lv_label_get_text(label);
 
-    if(pin_index >= 4)
-        return;
-
-    entered_pin[pin_index] = num_str[0];
-    entered_pin[pin_index + 1] = '\0';
-
-    pin_index++;
-
-//    sprintf(buffer, "PIN: %s\r\n", entered_pin);
-//    USART1_send_string(buffer);
-
-    if(pin_index == 1)
-        lv_obj_add_state(ui_Pin0, LV_STATE_CHECKED);
-    else if(pin_index == 2)
-        lv_obj_add_state(ui_Pin1, LV_STATE_CHECKED);
-    else if(pin_index == 3)
-        lv_obj_add_state(ui_Pin2, LV_STATE_CHECKED);
-    else if(pin_index == 4)
-        lv_obj_add_state(ui_Pin3, LV_STATE_CHECKED);
+    num_btn_onc(num_str);
 }
 
 void enter_btn_pressed(lv_event_t * e){
-	if(pin_index != 4)
-		return;
-
-	if(!password_reset_mode){
-		if(user_login(&user, entered_pin)) {
-			lv_label_set_text(ui_StatusLabel, "Success!");
-			lv_obj_clear_state(ui_StatusLabel, LV_STATE_USER_1);
-			reset();
-			dashboard();
-		}else{
-			lv_label_set_text(ui_StatusLabel, "Incorrect Password");
-			lv_obj_add_state(ui_StatusLabel, LV_STATE_USER_1);
-			reset();
-		}
-	}else{
-		user_change_password(&user, entered_pin);
-
-		lv_label_set_text(ui_StatusLabel, "Password Changed!");
-		lv_obj_clear_state(ui_StatusLabel, LV_STATE_USER_1);
-		password_reset_mode = false;
-		reset();
-		dashboard();
-	}
+	enter_btn_onc();
 }
 
 void clear_btn_pressed(lv_event_t * e){
-    reset();
-    lv_label_set_text(ui_StatusLabel, password_reset_mode ? "Enter New Password" : "Enter Password");
-    lv_obj_clear_state(ui_StatusLabel, LV_STATE_USER_1);
-}
-
-// not event function, just reset
-// since utilize same page for reset password, change the label only
-void ui_reset_password(void){
-	reset();
-	password_reset_mode = true;
-	password();
-	lv_label_set_text(ui_StatusLabel, "Enter New Password");
-	lv_obj_clear_state(ui_StatusLabel, LV_STATE_USER_1);
-}
-
-// reset everything
-void reset(void){
-	pin_index = 0;
-	entered_pin[0] = '\0';
-
-	lv_obj_clear_state(ui_Pin0, LV_STATE_CHECKED);
-	lv_obj_clear_state(ui_Pin1, LV_STATE_CHECKED);
-	lv_obj_clear_state(ui_Pin2, LV_STATE_CHECKED);
-	lv_obj_clear_state(ui_Pin3, LV_STATE_CHECKED);
+	clr_btn_onc();
 }
 
 void sensor_reading_on_screen_loaded(lv_event_t * e) {
@@ -118,17 +42,15 @@ void sensor_reading_on_screen_unloaded(lv_event_t * e) {
 }
 
 void record_on_screen_loaded(lv_event_t * e) {
-	// Your code here
+	record_page_start();
 }
 
-void prev_on_click(lv_event_t * e)
-{
-	// Your code here
+void prev_on_click(lv_event_t * e){
+	record_page_prev_onc();
 }
 
-void next_on_click(lv_event_t * e)
-{
-	// Your code here
+void next_on_click(lv_event_t * e){
+	record_page_next_onc();
 }
 
 void setting_on_screen_loaded(lv_event_t * e) {

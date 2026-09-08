@@ -401,6 +401,7 @@ void ui_RecordPage_screen_init(void)
     lv_obj_set_y(ui_PrevLabelR, -90);
     lv_obj_set_align(ui_PrevLabelR, LV_ALIGN_CENTER);
     lv_label_set_text(ui_PrevLabelR, "<Prev");
+    lv_obj_add_flag(ui_PrevLabelR, LV_OBJ_FLAG_CLICKABLE);     /// Flags
     lv_obj_set_style_text_font(ui_PrevLabelR, &lv_font_montserrat_12, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     ui_PageLabelR = lv_label_create(ui_RecordPage);
@@ -410,6 +411,7 @@ void ui_RecordPage_screen_init(void)
     lv_obj_set_y(ui_PageLabelR, -90);
     lv_obj_set_align(ui_PageLabelR, LV_ALIGN_CENTER);
     lv_label_set_text(ui_PageLabelR, "Next>");
+    lv_obj_add_flag(ui_PageLabelR, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_set_style_text_font(ui_PageLabelR, &lv_font_montserrat_12, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     ui_NextLabelR = lv_label_create(ui_RecordPage);

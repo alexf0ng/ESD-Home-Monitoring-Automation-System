@@ -13,6 +13,7 @@
 #include "sensor/sensor.h"
 #include "page/setting_page/setting_page.h"
 #include "gpio/gpio.h"
+#include "nand/nand.h"
 
 void sensor_page_update(void);
 void sensor_page_start(void);

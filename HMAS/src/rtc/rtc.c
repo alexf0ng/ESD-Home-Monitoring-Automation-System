@@ -10,14 +10,14 @@
 static const char *monthNames[] = {
     "Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"
 };
+
 static void pad2(char *dst, uint8_t val){
     dst[0] = '0' + (val / 10);
     dst[1] = '0' + (val % 10);
     dst[2] = '\0';
 }
 
-void RTC_Config(void)
-{
+void RTC_Config_Init(StartDateTime startdatetime){
     RTC_InitTypeDef RTC_InitStructure;
     RTC_DateTypeDef d;
     RTC_TimeTypeDef t;
@@ -40,19 +40,39 @@ void RTC_Config(void)
     RTC_GetDate(RTC_Format_BIN, &d);
     RTC_GetTime(RTC_Format_BIN, &t);
 
-    // If calendar is still at hardware default, (re)apply our starting date/time
     if (d.RTC_Year == 0 && d.RTC_Month == 1 && d.RTC_Date == 1 &&
         t.RTC_Hours == 0 && t.RTC_Minutes == 0 && t.RTC_Seconds == 0)
     {
-        RTC_SetDateTime(26, 9, 8, 12, 0, 0);
+        RTC_set_date_time(startdatetime.year, startdatetime.month, startdatetime.day, startdatetime.hour, startdatetime.minute, startdatetime.second);
     }
 }
 
-void RTC_GetDateTimeStr(char *outStr)
-{
+void RTC_set_date_time(uint8_t year, uint8_t month, uint8_t date, uint8_t hour, uint8_t min, uint8_t sec){
+    RTC_DateTypeDef RTC_DateStructure;
+    RTC_TimeTypeDef RTC_TimeStructure;
+
+    RTC_DateStructure.RTC_Year    = year;
+    RTC_DateStructure.RTC_Month   = month;
+    RTC_DateStructure.RTC_Date    = date;
+    RTC_DateStructure.RTC_WeekDay = RTC_Weekday_Monday;
+    RTC_SetDate(RTC_Format_BIN, &RTC_DateStructure);
+
+    RTC_TimeStructure.RTC_Hours   = hour;
+    RTC_TimeStructure.RTC_Minutes = min;
+    RTC_TimeStructure.RTC_Seconds = sec;
+    RTC_TimeStructure.RTC_H12     = RTC_H12_AM;
+    RTC_SetTime(RTC_Format_BIN, &RTC_TimeStructure);
+}
+
+void RTC_get_current(RTC_DateTypeDef *outDate, RTC_TimeTypeDef *outTime){
+    RTC_GetDate(RTC_Format_BIN, outDate);
+    RTC_GetTime(RTC_Format_BIN, outTime);
+}
+
+void RTC_get_date_time_str(char *outStr){
     RTC_DateTypeDef d;
     RTC_TimeTypeDef t;
-    RTC_GetCurrent(&d, &t);
+    RTC_get_current(&d, &t);
 
     char dateBuf[3], hourBuf[3], minBuf[3], secBuf[3];
     pad2(dateBuf, d.RTC_Date);
@@ -67,10 +87,12 @@ void RTC_GetDateTimeStr(char *outStr)
     strcat(outStr, " ");
     strcat(outStr, mon);
     strcat(outStr, " 20");
+
     // year is only ever 0-99, safe with plain %d (no width/padding)
     char yearBuf[8];
     sprintf(yearBuf, "%d", d.RTC_Year);
     strcat(outStr, yearBuf);
+
     strcat(outStr, " - ");
     strcat(outStr, hourBuf);
     strcat(outStr, ":");
@@ -78,23 +100,3 @@ void RTC_GetDateTimeStr(char *outStr)
     strcat(outStr, ":");
     strcat(outStr, secBuf);
 }
-
-void RTC_GetCurrent(RTC_DateTypeDef *outDate, RTC_TimeTypeDef *outTime)
-{
-    RTC_GetDate(RTC_Format_BIN, outDate);
-    RTC_GetTime(RTC_Format_BIN, outTime);
-}
-
-void RTC_GetDateTimeStr(char *outStr)
-{
-    RTC_DateTypeDef d;
-    RTC_TimeTypeDef t;
-
-    RTC_GetCurrent(&d, &t);
-
-    sprintf(outStr, "%02d %s %04d - %02d:%02d:%02d",
-            d.RTC_Date, monthNames[d.RTC_Month - 1], 2000 + d.RTC_Year,
-            t.RTC_Hours, t.RTC_Minutes, t.RTC_Seconds);
-}
-
-

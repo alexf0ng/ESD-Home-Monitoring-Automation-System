@@ -15,8 +15,10 @@ extern "C" {
 #include "usart/usart.h"
 #include "sensor/sensor.h"
 #include "page/page.h"
+#include "page/record_page/record_page.h"
 #include "page/sensor_page/sensor_page.h"
 #include "page/setting_page/setting_page.h"
+#include "page/password_page/password_page.h"
 #include <stdio.h>
 #include <stdbool.h>
 

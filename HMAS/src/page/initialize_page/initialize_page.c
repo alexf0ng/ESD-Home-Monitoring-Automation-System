@@ -59,5 +59,13 @@ void screen_init() {
 		my_touchpad_read
 	);
 }
+static void switch_to_password(lv_timer_t *timer){
+    password();
+    lv_timer_del(timer);
+}
+
+void splash_and_jump(void){
+	lv_timer_create(switch_to_password, 5000, NULL);
+}
 
 

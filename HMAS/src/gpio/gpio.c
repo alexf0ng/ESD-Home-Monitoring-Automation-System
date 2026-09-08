@@ -36,7 +36,7 @@ void GPIO_btn_init(Gpio *gpio)
 
     GPIO_InitStructure.GPIO_Pin = gpio->pin;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
-    GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_DOWN;
+    GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
 
     GPIO_Init(
 		GPIOC,

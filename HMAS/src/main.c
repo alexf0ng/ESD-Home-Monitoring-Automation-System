@@ -49,8 +49,10 @@ SOFTWARE.
 #include "timer/timer.h"
 #include "rtc/rtc.h"
 #include "nand/nand.h"
+#include "rtc/rtc.h"
 #include "page/page.h"
 #include "page/setting_page/setting_page.h"
+#include "page/password_page/password_page.h"
 #include "page/initialize_page/initialize_page.h"
 char buffer[50];
 // user
@@ -113,16 +115,19 @@ Threshold threshold = {
 	.indecrement = 1
 };
 
-static void switch_to_main(lv_timer_t *timer)
-{
-	password();
+// rtc
+StartDateTime startdatetime = {
+	.year = 26,
+    .month = 9,
+    .day = 8,
+	.hour = 22,
+	.minute = 54,
+	.second = 0
+};
 
-    lv_timer_del(timer);
-}
-static void print_rtc_time(lv_timer_t *timer)
-{
+static void print_rtc_time(lv_timer_t *timer){
 	char timeStr[24];
-	RTC_GetDateTimeStr(timeStr);
+	RTC_get_date_time_str(timeStr);
 	sprintf(buffer, "%s\r\n", timeStr);
 	USART1_send_string(buffer);
 }
@@ -171,9 +176,9 @@ int main(void)
 	// threshold value init
 	temp_hum_threshold_init(threshold);
 	// rtc init
-		RTC_Config();
+	RTC_Config_Init(startdatetime);
 	// nand init
-	NAND_Log_Init();
+	NAND_Init();
 
 
     USART1_send_string("Initialization Finish!\r\n");
@@ -182,15 +187,11 @@ int main(void)
     ui_init();
     lv_timer_create(print_rtc_time, 1000, NULL);
 
-    lv_timer_create(
-        switch_to_main,
-        5000,
-        NULL
-    );
+    splash_and_jump();
 
+    password_page_reset_listen();
     while (1) {
 		lv_timer_handler();
-
     }
 }
 

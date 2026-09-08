@@ -7,23 +7,33 @@
 
 #ifndef NAND_NAND_H_
 #define NAND_NAND_H_
-
-#include "fsmc_nand/fsmc_nand.h"
+#include "rtc/rtc.h"
 #include "usart/usart.h"
+#include "fsmc_nand/fsmc_nand.h"
 #include <string.h>
 #include <stdio.h>
-
+#pragma pack(push, 1)
 typedef struct {
-	uint16_t temp;
-	uint16_t hum;
-	uint16_t ldr;
+    uint8_t  year;
+    uint8_t  month;
+    uint8_t  date;
+    uint8_t  hour;
+    uint8_t  min;
+    uint8_t  sec;
+    int16_t  temp;
+    uint8_t  hum;
+    uint16_t ldr;
 } SensorRecord;
+#pragma pack(pop)
 
-#define RECORD_SIZE sizeof(SensorRecord)
-#define RECORDS_PER_SAVE 5
+#define RECORD_SIZE       sizeof(SensorRecord)   // 10 bytes
+#define RECORDS_PER_SAVE  5
 
-void NAND_Log_Init(void);
-void NAND_Log_AddRecord(uint16_t temp, uint16_t hum, uint16_t ldr);
-void NAND_Log_ReadLast(SensorRecord *out, uint8_t count);
+void     NAND_Init(void);
+void     NAND_log_add_record(int16_t temp, uint8_t hum, uint16_t ldr);
+uint32_t NAND_log_get_total_pages(void);
+
+uint8_t  NAND_log_read_page(uint32_t pageIndex, SensorRecord *outArr);
+void     sensor_record_to_date_str(const SensorRecord *rec, char *outStr);
 
 #endif /* NAND_NAND_H_ */
