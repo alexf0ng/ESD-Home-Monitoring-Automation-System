@@ -11,8 +11,7 @@ static lv_timer_t *sensor_timer = NULL;
 extern char buffer[50];
 static int save_count = 0;
 
-void sensor_page_update(void)
-{
+void sensor_page_update(void){
 	// read dht22 and ldr
     Sensor sensor = temp_hum_ldr();
 

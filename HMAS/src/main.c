@@ -47,6 +47,8 @@ SOFTWARE.
 #include "usart/usart.h"
 #include "gpio/gpio.h"
 #include "timer/timer.h"
+#include "rtc/rtc.h"
+#include "nand/nand.h"
 #include "page/page.h"
 #include "page/setting_page/setting_page.h"
 #include "page/initialize_page/initialize_page.h"
@@ -117,7 +119,13 @@ static void switch_to_main(lv_timer_t *timer)
 
     lv_timer_del(timer);
 }
-
+static void print_rtc_time(lv_timer_t *timer)
+{
+	char timeStr[24];
+	RTC_GetDateTimeStr(timeStr);
+	sprintf(buffer, "%s\r\n", timeStr);
+	USART1_send_string(buffer);
+}
 
 int main(void)
 {
@@ -162,22 +170,24 @@ int main(void)
 
 	// threshold value init
 	temp_hum_threshold_init(threshold);
+	// rtc init
+		RTC_Config();
+	// nand init
+	NAND_Log_Init();
 
-	// nand
-	FMC_NAND_Init();
-
-	FMC_NAND_Test();
 
     USART1_send_string("Initialization Finish!\r\n");
     screen_init();
 
     ui_init();
+    lv_timer_create(print_rtc_time, 1000, NULL);
 
     lv_timer_create(
         switch_to_main,
         5000,
         NULL
     );
+
     while (1) {
 		lv_timer_handler();
 
