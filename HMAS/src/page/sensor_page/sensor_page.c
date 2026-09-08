@@ -26,6 +26,8 @@ void sensor_page_update(void)
 
     ObLed obled = compare((int)sensor.temp, (int)sensor.hum);
     GPIO_openObLED(obled.pg13, obled.pg14);
+
+    // save to nand flash here
 }
 
 static void sensor_page_timer_callback(lv_timer_t *timer){

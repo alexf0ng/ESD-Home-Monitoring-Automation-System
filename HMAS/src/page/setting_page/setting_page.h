@@ -22,7 +22,7 @@ typedef struct {
 	bool pg14;
 } ObLed;
 
-void temp_hum_threshold_init(Threshold threshold_init); // by default 50 is assign for both
+void temp_hum_threshold_init(Threshold threshold_init);
 int temp_inc(bool is_inc);
 int hum_inc(bool is_inc);
 ObLed compare(int temp, int hum);

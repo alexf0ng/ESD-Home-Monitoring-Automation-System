@@ -58,7 +58,7 @@ void ui_event_BottomNavDashboardSt(lv_event_t * e)
     lv_event_code_t event_code = lv_event_get_code(e);
 
     if(event_code == LV_EVENT_CLICKED) {
-        _ui_screen_change(&ui_DashboardPage, LV_SCR_LOAD_ANIM_FADE_ON, 500, 0, &ui_DashboardPage_screen_init);
+        _ui_screen_change(&ui_DashboardPage, LV_SCR_LOAD_ANIM_NONE, 50, 0, &ui_DashboardPage_screen_init);
     }
 }
 
@@ -67,7 +67,7 @@ void ui_event_BottomNavSensorSt(lv_event_t * e)
     lv_event_code_t event_code = lv_event_get_code(e);
 
     if(event_code == LV_EVENT_CLICKED) {
-        _ui_screen_change(&ui_SensorPage, LV_SCR_LOAD_ANIM_FADE_ON, 500, 0, &ui_SensorPage_screen_init);
+        _ui_screen_change(&ui_SensorPage, LV_SCR_LOAD_ANIM_NONE, 50, 0, &ui_SensorPage_screen_init);
     }
 }
 
@@ -76,7 +76,7 @@ void ui_event_BottomNavRecordSt(lv_event_t * e)
     lv_event_code_t event_code = lv_event_get_code(e);
 
     if(event_code == LV_EVENT_CLICKED) {
-        _ui_screen_change(&ui_RecordPage, LV_SCR_LOAD_ANIM_FADE_ON, 500, 0, &ui_RecordPage_screen_init);
+        _ui_screen_change(&ui_RecordPage, LV_SCR_LOAD_ANIM_NONE, 50, 0, &ui_RecordPage_screen_init);
     }
 }
 

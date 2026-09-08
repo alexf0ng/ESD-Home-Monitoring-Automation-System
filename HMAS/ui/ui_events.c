@@ -28,8 +28,7 @@ void num_btn_pressed(lv_event_t * e){
     lv_obj_t * btn = lv_event_get_target(e);
     lv_obj_t * label = lv_obj_get_child(btn, 0);
 
-    if(label == NULL)
-    {
+    if(label == NULL){
         USART1_send_string("ERROR: No label\r\n");
         return;
     }
@@ -44,8 +43,8 @@ void num_btn_pressed(lv_event_t * e){
 
     pin_index++;
 
-    sprintf(buffer, "PIN: %s\r\n", entered_pin);
-    USART1_send_string(buffer);
+//    sprintf(buffer, "PIN: %s\r\n", entered_pin);
+//    USART1_send_string(buffer);
 
     if(pin_index == 1)
         lv_obj_add_state(ui_Pin0, LV_STATE_CHECKED);
@@ -141,11 +140,12 @@ void setting_on_screen_loaded(lv_event_t * e) {
 }
 
 void temp_hum_on_save(lv_event_t * e) {
-	lv_label_set_text(ui_SaveLabelSt, "Saving...");
+	lv_label_set_text(ui_SaveLabelSt, "SAVING...");
 	lv_obj_add_state(ui_SettingPage, LV_STATE_DISABLED);
 	save_threshold();
-	lv_label_set_text(ui_SaveLabelSt, "Save");
+	lv_label_set_text(ui_SaveLabelSt, "SAVE");
 	lv_obj_clear_state(ui_SettingPage, LV_STATE_DISABLED);
+	dashboard();
 
 }
 

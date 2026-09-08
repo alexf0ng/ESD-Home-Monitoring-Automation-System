@@ -30,9 +30,6 @@ SOFTWARE.
 /* Includes */
 #include "stm32f4xx.h"
 #include "stm32f429i_discovery.h"
-#include "tm_stm32f4_ili9341.h"
-#include "tm_stm32f4_fonts.h"
-#include "tm_stm32f4_stmpe811.h"
 
 /* Private macro */
 /* Private variables */
@@ -52,21 +49,8 @@ SOFTWARE.
 #include "timer/timer.h"
 #include "page/page.h"
 #include "page/setting_page/setting_page.h"
-
-/* LCD resolution in Landscape */
-#define LCD_WIDTH   320
-#define LCD_HEIGHT  240
-
-/* LVGL draw buffer */
-static lv_color_t buf1[LCD_WIDTH * 20];
+#include "page/initialize_page/initialize_page.h"
 char buffer[50];
-lv_obj_t *title;
-volatile uint32_t button_hold_ms = 0;
-volatile bool button_held_5s = false;
-volatile bool button_5s_triggered = false;
-TM_STMPE811_TouchData touchData;
-
-
 // user
 User user;
 Usart1 usart1 = {
@@ -109,50 +93,23 @@ Timer timer2 = {
 	.enable_interrupt = false
 };
 
+// timer4 for dc motor
+Timer timer4 = {
+	.timer = TIM4,
+	.timer_clock = RCC_APB1Periph_TIM4,
+	// timer tick freq = 84000000 / (0 + 1) = 84000000
+	// period = 84000000 / 50000 - 1 = 1680
+	.prescaler = 0,
+	.period = 1680,
+};
+
+
 // threshold
 Threshold threshold = {
 	.temp_threshold = 20,
 	.hum_threshold = 30,
 	.indecrement = 1
 };
-
-
-static void my_flush_cb(
-    lv_display_t *display,
-    const lv_area_t *area,
-    uint8_t *px_map)
-{
-    TM_ILI9341_DrawBuffer(
-    		area->x1,
-			area->y1,
-			area->x2,
-			area->y2,
-			(uint16_t *)px_map
-	);
-
-    lv_display_flush_ready(display);
-}
-void my_touchpad_read(lv_indev_t * indev, lv_indev_data_t * data){
-//    char msg[50];
-
-    if (TM_STMPE811_ReadTouch(&touchData) == TM_STMPE811_State_Pressed){
-        data->state = LV_INDEV_STATE_PRESSED;
-
-        data->point.x = touchData.y;
-        data->point.y = 240 - touchData.x;
-
-//        sprintf(
-//            msg,
-//            "Touch X=%d Y=%d\r\n",
-//            data->point.x,
-//            data->point.y
-//        );
-//
-//        USART1_send_string(msg);
-    } else {
-        data->state = LV_INDEV_STATE_RELEASED;
-    }
-}
 
 static void switch_to_main(lv_timer_t *timer)
 {
@@ -206,38 +163,7 @@ int main(void)
 	temp_hum_threshold_init(threshold);
 
     USART1_send_string("Initialization Finish!\r\n");
-
-
-
-    TM_ILI9341_Rotate(TM_ILI9341_Orientation_Landscape_1);
-
-    lv_display_t *display = lv_display_create(320, 240);
-
-    lv_display_set_buffers(
-        display,
-        buf1,
-        NULL,
-        sizeof(buf1),
-        LV_DISPLAY_RENDER_MODE_PARTIAL
-    );
-
-    lv_display_set_flush_cb(
-        display,
-        my_flush_cb
-    );
-
-    /* Create LVGL touch input device */
-    lv_indev_t *indev = lv_indev_create();
-
-    lv_indev_set_type(
-    	indev,
-        LV_INDEV_TYPE_POINTER
-    );
-
-    lv_indev_set_read_cb(
-        indev,
-        my_touchpad_read
-    );
+    screen_init();
 
     ui_init();
 
