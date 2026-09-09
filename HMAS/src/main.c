@@ -45,12 +45,12 @@ SOFTWARE.
 
 #include "user/user.h"
 #include "usart/usart.h"
-#include "gpio/gpio.h"
 #include "timer/timer.h"
 #include "rtc/rtc.h"
 #include "nand/nand.h"
 #include "rtc/rtc.h"
 #include "btn/btn.h"
+#include "led/led.h"
 #include "page/page.h"
 #include "page/setting_page/setting_page.h"
 #include "page/password_page/password_page.h"
@@ -58,6 +58,7 @@ SOFTWARE.
 char buffer[50];
 // user
 User user;
+
 Usart1 usart1 = {
 	.port = GPIOA,
 	.tx_pin = GPIO_Pin_9,
@@ -66,11 +67,30 @@ Usart1 usart1 = {
 	.rx_source = GPIO_PinSource10,
 	.baudrate = 115200
 };
-Gpio gpio_obled = {
-	.pin = GPIO_Pin_13 | GPIO_Pin_14
+
+// led
+LedGpio ledgpiog13 = {
+	.port = GPIOG,
+	.pin = GPIO_Pin_13,
+	.mode = GPIO_Mode_OUT,
+	.clock = RCC_AHB1Periph_GPIOG,
+	.pull = GPIO_PuPd_UP,
+	.speed = GPIO_Speed_50MHz,
+	.type = GPIO_OType_PP
+};
+
+LedGpio ledgpiog14 = {
+	.port = GPIOG,
+	.pin = GPIO_Pin_14,
+	.mode = GPIO_Mode_OUT,
+	.clock = RCC_AHB1Periph_GPIOG,
+	.pull = GPIO_PuPd_UP,
+	.speed = GPIO_Speed_50MHz,
+	.type = GPIO_OType_PP
 };
 
 
+// button
 BtnGpio btngpioc5 = {
     .port = GPIOC,
     .pin = GPIO_Pin_5,
@@ -161,8 +181,10 @@ int main(void)
 	// ext button init
 	extbtn_Init(&btngpioc5);
 
-	// gpio init
-	GPIO_obLED_init(&gpio_obled);
+	// led init
+	led_Init(&ledgpiog13);
+	led_Init(&ledgpiog14);
+
 	USART1_send_string("GPIO Initialize Success!\r\n");
 
 	// timer and interrupt init
@@ -189,6 +211,8 @@ int main(void)
 	// nand init
 	NAND_Init();
 
+	// sensor page init
+	sensor_page_init(&ledgpiog13, &ledgpiog14);
 
     USART1_send_string("Initialization Finish!\r\n");
     screen_init();

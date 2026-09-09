@@ -28,15 +28,14 @@ void reset(void){
 
 static void led_test_done(lv_timer_t *timer){
     lv_timer_del(timer);
-    GPIO_openObLED(false, false);
+    close_all_led();
     dashboard();
 }
 void login_success_led_test(){
 	lv_label_set_text(ui_InitializeMsg1, "Testing LEDs...");
 	lv_label_set_text(ui_InitializeMsg2, "Testing...");
 	// assert led here
-	GPIO_openObLED(true, true);
-	// end
+	open_all_led();
 
 	_ui_screen_change(&ui_InitializePage, LV_SCR_LOAD_ANIM_NONE, 50, 0, &ui_InitializePage_screen_init);
 	lv_timer_create(led_test_done, 2000, NULL);
@@ -111,13 +110,13 @@ static void pc5_hold_check(lv_timer_t *timer){
 		pc5_triggered = false;
 		return;
 	}
-	// also skip if we're already in reset mode - no need to re-trigger
+	// also skip if we already in reset mode
 	if (password_reset_mode){
 		pc5_hold_ms   = 0;
 		pc5_triggered = false;
 		return;
 	}
-	BtnGpio *btngpio = (BtnGpio *)lv_timer_get_user_data(timer);
+	BtnGpio *btngpio = (BtnGpio *)lv_timer_get_user_data(timer); // read pass value
     bool pressed = (GPIO_ReadInputDataBit(btngpio->port, btngpio->pin) == SET);
     if (pressed){
         pc5_hold_ms += PC5_CHECK_INTERVAL_MS;
@@ -132,7 +131,6 @@ static void pc5_hold_check(lv_timer_t *timer){
         pc5_triggered = false;
     }
 }
-
 
 void password_page_reset_listen(BtnGpio* btngpioc5){
     lv_timer_create(pc5_hold_check, PC5_CHECK_INTERVAL_MS, btngpioc5);

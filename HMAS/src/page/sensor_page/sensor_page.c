@@ -8,8 +8,15 @@
 #include "sensor_page.h"
 
 static lv_timer_t *sensor_timer = NULL;
-extern char buffer[50];
 static int save_count = 0;
+static LedGpio* led1;
+static LedGpio* led2;
+extern char buffer[50];
+
+void sensor_page_init(LedGpio *ledgpio1, LedGpio *ledgpio2){
+	led1 = ledgpio1;
+	led2 = ledgpio2;
+}
 
 void sensor_page_update(void){
 	// read dht22 and ldr
@@ -22,10 +29,14 @@ void sensor_page_update(void){
     sprintf(buffer, "%d", (int)sensor.ldr);
     lv_label_set_text(ui_IntensityS, buffer);
 
+
     ObLed obled = compare((int)sensor.temp, (int)sensor.hum);
-    GPIO_openObLED(obled.pg13, obled.pg14);
+    obled.led1 ? open_led(led1) : close_led(led1);
+    obled.led2 ? open_led(led2) : close_led(led2);
+
     // save to nand flash here
     NAND_log_add_record((int16_t)sensor.temp, (uint8_t)sensor.hum, (uint16_t)sensor.ldr);
+
     save_count++;
     sprintf(buffer, "%d", save_count);
     lv_label_set_text(ui_SaveS, buffer);
@@ -64,6 +75,7 @@ void sensor_page_stop(void){
     if(sensor_timer != NULL){
         lv_timer_del(sensor_timer);
         sensor_timer = NULL;
-        GPIO_openObLED(false, false);
+        close_led(led1);
+        close_led(led2);
     }
 }

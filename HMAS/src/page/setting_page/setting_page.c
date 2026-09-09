@@ -36,16 +36,16 @@ int hum_inc(bool is_inc){
 ObLed compare(int temp, int hum) {
 	// should return control whether to light or not light ob led
 	ObLed obled = {
-		.pg13 = false,
-		.pg14 = false
+		.led1 = false,
+		.led2 = false
 	};
 
 	if(temp > threshold.temp_threshold) {
-		obled.pg13 = true;
+		obled.led1 = true;
 		// motor function call
 	}
 	if(hum > threshold.hum_threshold) {
-		obled.pg14 = true;
+		obled.led2 = true;
 		// motor function call
 	}
 

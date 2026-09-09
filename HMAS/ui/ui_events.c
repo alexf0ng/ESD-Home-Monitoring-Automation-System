@@ -8,9 +8,7 @@
 // from main code
 extern char buffer[50];
 
-// here just handle ui stuff only
-// not mixing authentication here
-// here more doing input validation
+// ui event
 void num_btn_pressed(lv_event_t * e){
     lv_obj_t * btn = lv_event_get_target(e);
     lv_obj_t * label = lv_obj_get_child(btn, 0);

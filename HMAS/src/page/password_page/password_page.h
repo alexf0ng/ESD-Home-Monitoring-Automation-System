@@ -11,6 +11,7 @@
 #include "ui.h"
 #include "usart/usart.h"
 #include "btn/btn.h"
+#include "led/led.h"
 #include <stdio.h>
 #include <stdbool.h>
 

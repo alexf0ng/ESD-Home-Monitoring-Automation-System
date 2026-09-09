@@ -18,8 +18,8 @@ typedef struct {
 	int indecrement;
 } Threshold;
 typedef struct {
-	bool pg13;
-	bool pg14;
+	bool led1;
+	bool led2;
 } ObLed;
 
 void temp_hum_threshold_init(Threshold threshold_init);
