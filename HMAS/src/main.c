@@ -51,6 +51,8 @@ SOFTWARE.
 #include "rtc/rtc.h"
 #include "btn/btn.h"
 #include "led/led.h"
+#include "sensor/sw420/sw420.h"
+#include "atb3972/atb3972.h"
 #include "page/page.h"
 #include "page/setting_page/setting_page.h"
 #include "page/password_page/password_page.h"
@@ -152,6 +154,33 @@ StartDateTime startdatetime = {
 };
 
 // sw420
+Sw420Gpio sw420gpio = {
+	.port  = GPIOD,
+	.pin   = GPIO_Pin_5,
+	.clock = RCC_AHB1Periph_GPIOD,
+	.mode  = GPIO_Mode_IN,
+	.pull  = GPIO_PuPd_NOPULL
+};
+// the siren analog test board
+Atb3972 atb3972 = {
+	.clock_gpio = RCC_AHB1Periph_GPIOA,
+	.clock_dac  = RCC_APB1Periph_DAC,
+	.clock_tim  = RCC_APB1Periph_TIM6,
+	.pin        = GPIO_Pin_5,
+	.mode       = GPIO_Mode_AN,
+	.pull       = GPIO_PuPd_NOPULL,
+	.port       = GPIOA,
+	.tim               = TIM6,
+	.tim_period        = 44999,   // TEMP: slow for visual test
+	.tim_prescaler     = 1999,    // TEMP: slow for visual test
+	.tim_clockdivision = 0,
+	.tim_countermode   = TIM_CounterMode_Up,
+	.dac_channel            = DAC_Channel_2,
+	.dac_trigger            = DAC_Trigger_T6_TRGO,
+	.dac_wave               = DAC_WaveGeneration_Triangle,
+	.dac_triangle_amplitude = DAC_TriangleAmplitude_4095,
+	.dac_outputbuffer       = DAC_OutputBuffer_Enable
+};
 static void print_rtc_time(lv_timer_t *timer){
 	char timeStr[24];
 	RTC_get_date_time_str(timeStr);
@@ -214,6 +243,15 @@ int main(void)
 	// sensor page init
 	sensor_page_init(&ledgpiog13, &ledgpiog14);
 
+	atb_Init(&atb3972);
+	USART1_send_string("ATB Init done\r\n");
+	atb_start(&atb3972);
+	USART1_send_string("ATB Start done\r\n");
+
+	// sw420 init
+	sw420_Init(&sw420gpio);
+
+
     USART1_send_string("Initialization Finish!\r\n");
     screen_init();
 
@@ -223,8 +261,21 @@ int main(void)
     splash_and_jump();
 
     password_page_reset_listen(&btngpioc5);
+    sw420_listen(&sw420gpio, &atb3972);
+
     while (1) {
 		lv_timer_handler();
+		static bool ledState = false;
+		if (TIM_GetFlagStatus(TIM6, TIM_FLAG_Update) == SET)
+		{
+			TIM_ClearFlag(TIM6, TIM_FLAG_Update);
+			ledState = !ledState;
+
+			if (ledState)
+				open_led(&ledgpiog14);
+			else
+				close_led(&ledgpiog14);
+		}
     }
 }
 
