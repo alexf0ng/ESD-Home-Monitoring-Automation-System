@@ -10,12 +10,13 @@
 
 #include "ui.h"
 #include "usart/usart.h"
+#include "btn/btn.h"
 #include <stdio.h>
 #include <stdbool.h>
 
 void num_btn_onc(const char * num_str );
 void enter_btn_onc(void);
 void clr_btn_onc(void);
-void password_page_reset_listen(void);
+void password_page_reset_listen(BtnGpio *btngpio);
 
 #endif /* PAGE_PASSWORD_PAGE_PASSWORD_PAGE_H_ */

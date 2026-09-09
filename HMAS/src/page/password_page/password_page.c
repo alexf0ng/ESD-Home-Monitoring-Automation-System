@@ -117,7 +117,8 @@ static void pc5_hold_check(lv_timer_t *timer){
 		pc5_triggered = false;
 		return;
 	}
-    bool pressed = (GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_5) == SET);
+	BtnGpio *btngpio = (BtnGpio *)lv_timer_get_user_data(timer);
+    bool pressed = (GPIO_ReadInputDataBit(btngpio->port, btngpio->pin) == SET);
     if (pressed){
         pc5_hold_ms += PC5_CHECK_INTERVAL_MS;
 
@@ -133,7 +134,7 @@ static void pc5_hold_check(lv_timer_t *timer){
 }
 
 
-void password_page_reset_listen(void){
-    lv_timer_create(pc5_hold_check, PC5_CHECK_INTERVAL_MS, NULL);
+void password_page_reset_listen(BtnGpio* btngpioc5){
+    lv_timer_create(pc5_hold_check, PC5_CHECK_INTERVAL_MS, btngpioc5);
 }
 

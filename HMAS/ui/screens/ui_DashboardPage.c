@@ -72,6 +72,7 @@ void ui_event_LogoutPanelD(lv_event_t * e)
     lv_event_code_t event_code = lv_event_get_code(e);
 
     if(event_code == LV_EVENT_CLICKED) {
+    	lv_label_set_text(ui_StatusLabel, "Enter Password");
         _ui_screen_change(&ui_PasswordPage, LV_SCR_LOAD_ANIM_NONE, 50, 0, &ui_PasswordPage_screen_init);
     }
 }

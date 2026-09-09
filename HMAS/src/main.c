@@ -50,6 +50,7 @@ SOFTWARE.
 #include "rtc/rtc.h"
 #include "nand/nand.h"
 #include "rtc/rtc.h"
+#include "btn/btn.h"
 #include "page/page.h"
 #include "page/setting_page/setting_page.h"
 #include "page/password_page/password_page.h"
@@ -69,8 +70,13 @@ Gpio gpio_obled = {
 	.pin = GPIO_Pin_13 | GPIO_Pin_14
 };
 
-Gpio gpio_btn = {
-	.pin = GPIO_Pin_5
+
+BtnGpio btngpioc5 = {
+    .port = GPIOC,
+    .pin = GPIO_Pin_5,
+    .mode = GPIO_Mode_IN,
+    .clock = RCC_AHB1Periph_GPIOC,
+    .pull = GPIO_PuPd_NOPULL
 };
 
 // timer for lvgl
@@ -125,6 +131,7 @@ StartDateTime startdatetime = {
 	.second = 0
 };
 
+// sw420
 static void print_rtc_time(lv_timer_t *timer){
 	char timeStr[24];
 	RTC_get_date_time_str(timeStr);
@@ -151,9 +158,11 @@ int main(void)
 	lv_init();
 	USART1_send_string("LVGL Initialize Success!\r\n");
 
+	// ext button init
+	extbtn_Init(&btngpioc5);
+
 	// gpio init
 	GPIO_obLED_init(&gpio_obled);
-	GPIO_btn_init(&gpio_btn);
 	USART1_send_string("GPIO Initialize Success!\r\n");
 
 	// timer and interrupt init
@@ -189,7 +198,7 @@ int main(void)
 
     splash_and_jump();
 
-    password_page_reset_listen();
+    password_page_reset_listen(&btngpioc5);
     while (1) {
 		lv_timer_handler();
     }
