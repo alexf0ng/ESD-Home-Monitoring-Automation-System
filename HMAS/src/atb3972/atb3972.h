@@ -4,10 +4,11 @@
  *  Created on: Sep 9, 2026
  *      Author: User
  */
+#ifndef __ATB3972_H
+#define __ATB3972_H
 
-#ifndef ATB3972_ATB3972_H_
-#define ATB3972_ATB3972_H_
 #include "stm32f4xx.h"
+#include "lvgl.h"
 
 typedef struct {
 	uint32_t clock_gpio;
@@ -18,10 +19,10 @@ typedef struct {
 	GPIOPuPd_TypeDef pull;
 	GPIO_TypeDef *port;
 
+	TIM_TypeDef *tim;
 	uint16_t tim_period;
 	uint16_t tim_prescaler;
 	uint16_t tim_clockdivision;
-	TIM_TypeDef *tim;
 	uint16_t tim_countermode;
 
 	uint32_t dac_channel;
@@ -29,11 +30,11 @@ typedef struct {
 	uint32_t dac_wave;
 	uint32_t dac_triangle_amplitude;
 	uint32_t dac_outputbuffer;
-} Atb3972;;
+} Atb3972;
 
 void atb_Init(Atb3972 *atb);
 void atb_start(Atb3972 *atb);
 void atb_stop(Atb3972 *atb);
 void atb_play(Atb3972 *atb);
 
-#endif /* ATB3972_ATB3972_H_ */
+#endif

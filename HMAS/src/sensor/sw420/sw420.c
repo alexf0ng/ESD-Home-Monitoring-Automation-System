@@ -55,18 +55,15 @@ static void sw420_check(lv_timer_t *timer){
 	static bool tonePlaying = false;
 
 	if (sw420_is_detected(gpio)){
-		if (!tonePlaying){
-			sprintf(buffer, "Motion detected!\r\n");
-			USART1_send_string(buffer);
-			atb_start(atb);
-			tonePlaying = true;
-		}
+	    if (!tonePlaying){
+	        sprintf(buffer, "Motion detected!\r\n");
+	        USART1_send_string(buffer);
+	        atb_play(atb);
+	        tonePlaying = true;
+	    }
 	}
 	else{
-		if (tonePlaying){
-			atb_stop(atb);
-			tonePlaying = false;
-		}
+	    tonePlaying = false;
 	}
 }
 void sw420_listen(Sw420Gpio *sw420gpio, Atb3972 *atb3972){

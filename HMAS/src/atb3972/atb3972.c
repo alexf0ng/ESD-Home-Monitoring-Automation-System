@@ -4,13 +4,17 @@
  *  Created on: Sep 9, 2026
  *      Author: User
  */
-/*
- * analog_test_board.c
- *
- *  Created on: Sep 9, 2026
- *      Author: User
- */
 #include "atb3972.h"
+
+#define ATB_JINGLE_NOTE_COUNT   2
+#define ATB_JINGLE_NOTE_MS      180
+
+static const uint16_t atb_jingle_notes[ATB_JINGLE_NOTE_COUNT] = {  14, 10 };
+
+static Atb3972    *atb_jingle_target  = NULL;
+static uint8_t      atb_jingle_index   = 0;
+static lv_timer_t  *atb_jingle_timer   = NULL;
+
 
 void atb_Init(Atb3972 *atb)
 {
@@ -65,31 +69,43 @@ void atb_stop(Atb3972 *atb)
 }
 
 // Sets the timer's auto-reload value, which controls the triangle wave's pitch.
-// Lower period = faster stepping = higher pitch.
 static void atb_set_period(Atb3972 *atb, uint16_t period){
     atb->tim->ARR = period;
 }
 
-// Crude blocking delay (busy loop). Fine for a short one-shot jingle;
-// avoid calling AnalogBoard_PlayJingle() from a fast-repeating LVGL timer.
-static void atb_delayms(uint32_t ms)
+static void atb_jingle_step(lv_timer_t *timer)
 {
-    for (uint32_t i = 0; i < ms * 4000; i++) { __NOP(); }
-}
-
-// An original short rising fanfare - four ascending notes, our own composition.
-void atb_play(Atb3972 *atb){
-    uint16_t notePeriods[] = { 3000, 2200, 1600, 1000 };
-    uint16_t noteDurationMs = 120;
-
-    atb_start(atb);
-
-    for (int i = 0; i < 4; i++)
+    if (atb_jingle_index >= ATB_JINGLE_NOTE_COUNT)
     {
-        atb_set_period(atb, notePeriods[i]);
-        atb_delayms(noteDurationMs);
+        // finished all notes, stop the tone and clean up
+        atb_stop(atb_jingle_target);
+        lv_timer_del(timer);
+        atb_jingle_timer = NULL;
+        return;
     }
 
-    atb_stop(atb);
+    atb_set_period(atb_jingle_target, atb_jingle_notes[atb_jingle_index]);
+    atb_jingle_index++;
 }
 
+// Starts the jingle. Returns immediately - playback continues in the
+// background via an internal lv_timer, safe to call again once finished
+// if called again while already playing, the previous jingle is cancelled
+// and restarted from the first note.
+void atb_play(Atb3972 *atb)
+{
+    if (atb_jingle_timer != NULL)
+    {
+        lv_timer_del(atb_jingle_timer);
+        atb_jingle_timer = NULL;
+    }
+
+    atb_jingle_target = atb;
+    atb_jingle_index   = 0;
+
+    atb_start(atb);
+    atb_set_period(atb, atb_jingle_notes[0]);
+    atb_jingle_index = 1;
+
+    atb_jingle_timer = lv_timer_create(atb_jingle_step, ATB_JINGLE_NOTE_MS, NULL);
+}
