@@ -11,11 +11,13 @@ static lv_timer_t *sensor_timer = NULL;
 static int save_count = 0;
 static LedGpio* led1;
 static LedGpio* led2;
+static Motor*   motor;
 extern char buffer[50];
 
-void sensor_page_init(LedGpio *ledgpio1, LedGpio *ledgpio2){
+void sensor_page_init(LedGpio *ledgpio1, LedGpio *ledgpio2, Motor *dcmotor){
 	led1 = ledgpio1;
 	led2 = ledgpio2;
+	motor = dcmotor;
 }
 
 void sensor_page_update(void){
@@ -30,9 +32,20 @@ void sensor_page_update(void){
     lv_label_set_text(ui_IntensityS, buffer);
 
 
+    // spec: green LED on temp over threshold, red LED on intensity under threshold
     ObLed obled = compare((int)sensor.temp, (int)sensor.hum);
     obled.led1 ? open_led(led1) : close_led(led1);
     obled.led2 ? open_led(led2) : close_led(led2);
+
+    // spec: for either threshold case, turn the dc motor at 85% duty / 50kHz
+    if (obled.led1 || obled.led2) {
+    	motor_on(motor);
+    	sprintf(buffer, "motor ON @ %d%%\r\n", motor->duty);
+    } else {
+    	motor_off(motor);
+    	sprintf(buffer, "motor OFF\r\n");
+    }
+    USART1_send_string(buffer);
 
     // save to nand flash here
     NAND_log_add_record((int16_t)sensor.temp, (uint8_t)sensor.hum, (uint16_t)sensor.ldr);
@@ -77,5 +90,6 @@ void sensor_page_stop(void){
         sensor_timer = NULL;
         close_led(led1);
         close_led(led2);
+        motor_off(motor);
     }
 }

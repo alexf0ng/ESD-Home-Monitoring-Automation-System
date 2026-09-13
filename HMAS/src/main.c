@@ -53,6 +53,7 @@ SOFTWARE.
 #include "led/led.h"
 #include "sensor/sw420/sw420.h"
 #include "atb3972/atb3972.h"
+#include "motor/motor.h"
 #include "page/page.h"
 #include "page/setting_page/setting_page.h"
 #include "page/password_page/password_page.h"
@@ -125,18 +126,11 @@ Timer timer2 = {
 	.enable_interrupt = false
 };
 
-// timer4 for dc motor
-Timer timer4 = {
-	.timer = TIM4,
-	.timer_clock = RCC_APB1Periph_TIM4,
-	// timer tick freq = 84000000 / (0 + 1) = 84000000
-	// period = 84000000 / 50000 - 1 = 1680
-	.prescaler = 0,
-	.period = 1680,
-};
 
 
 // threshold
+// temp: green LED (PG13) + motor when reading goes ABOVE this
+// ldr:  red   LED (PG14) + motor when reading falls BELOW this
 Threshold threshold = {
 	.temp_threshold = 20,
 	.hum_threshold = 30,
@@ -226,6 +220,10 @@ int main(void)
 	TIM_Cmd(timer2.timer, ENABLE);
 	USART1_send_string("Timer Initialize Success!\r\n");
 
+	// dc motor pwm init - needs timer4 time base up first
+	motor_Init();
+	USART1_send_string("Motor Initialize Success!\r\n");
+
 	// touch screen
 	TM_STMPE811_Init();
 	USART1_send_string("TMSTMPE811 Initialize Success!\r\n");
@@ -267,14 +265,15 @@ int main(void)
     }
 }
 
-/*
- * Callback used by stm324xg_eval_i2c_ee.c.
- * Refer to stm324xg_eval_i2c_ee.h for more info.
- */
-uint32_t sEE_TIMEOUT_UserCallback(void)
-{
-  /* TODO, implement your code here */
-  while (1)
-  {
-  }
-}
+///*
+// * Callback used by stm324xg_eval_i2c_ee.c.
+// * Refer to stm324xg_eval_i2c_ee.h for more info.
+// */
+//uint32_t sEE_TIMEOUT_UserCallback(void)
+//{
+//  /* TODO, implement your code here */
+//  while (1)
+//  {
+//
+//  }
+//}

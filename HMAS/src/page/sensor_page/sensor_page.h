@@ -12,10 +12,11 @@
 #include <stdio.h>
 #include "sensor/sensor.h"
 #include "led/led.h"
+#include "motor/motor.h"
 #include "nand/nand.h"
 #include "page/setting_page/setting_page.h"
 
-void sensor_page_init(LedGpio *ledgpiog13, LedGpio *ledgpiog14); //to store on board led
+void sensor_page_init(LedGpio *ledgpiog13, LedGpio *ledgpiog14, Motor *dcmotor); //to store on board led + dc motor
 void sensor_page_update(void);
 void sensor_page_start(void);
 void sensor_page_stop(void);

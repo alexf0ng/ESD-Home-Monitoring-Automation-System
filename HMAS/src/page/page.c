@@ -15,7 +15,9 @@ void dashboard(void) {
 		0,
 		&ui_DashboardPage_screen_init
 	);
+
 }
+
 void sensor(void) {
 	_ui_screen_change(
 		&ui_SensorPage,
@@ -42,6 +44,8 @@ void setting(void) {
 		0,
 		&ui_SettingPage_screen_init
 	);
+
+
 }
 void password(void) {
 	_ui_screen_change(
