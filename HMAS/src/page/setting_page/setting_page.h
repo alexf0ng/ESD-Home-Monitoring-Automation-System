@@ -25,7 +25,7 @@ typedef struct {
 void temp_hum_threshold_init(Threshold threshold_init);
 int temp_inc(bool is_inc);
 int hum_inc(bool is_inc);
-ObLed compare(int temp, int hum);
+ObLed compare(int temp, int ldr);
 void save_threshold(void);
 Threshold get_threshold(void);
 

@@ -126,7 +126,9 @@ Timer timer2 = {
 	.enable_interrupt = false
 };
 
-
+Motor dcmotor = {
+	.duty = 0
+};
 
 // threshold
 // temp: green LED (PG13) + motor when reading goes ABOVE this
@@ -241,7 +243,7 @@ int main(void)
 	NAND_Init();
 
 	// sensor page init
-	sensor_page_init(&ledgpiog13, &ledgpiog14);
+	sensor_page_init(&ledgpiog13, &ledgpiog14, &dcmotor);
 
 	atb_Init(&atb3972);
 	USART1_send_string("ATB Init done\r\n");

@@ -5,11 +5,15 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+typedef struct {
+	uint8_t duty;   // current duty percent (0-100); sensor_page.c reads this directly
+} Motor;
+
 void    motor_Init(void);
-void    motor_set_duty(uint8_t duty_percent);
-void    motor_on(void);
-void    motor_off(void);
-bool    motor_is_on(void);
-uint8_t motor_get_duty(void);
+void    motor_set_duty(Motor *motor, uint8_t duty_percent);
+void    motor_on(Motor *motor);
+void    motor_off(Motor *motor);
+bool    motor_is_on(Motor *motor);
+uint8_t motor_get_duty(Motor *motor);
 
 #endif /* MOTOR_MOTOR_H_ */

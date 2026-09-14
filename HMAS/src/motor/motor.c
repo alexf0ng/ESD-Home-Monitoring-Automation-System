@@ -3,7 +3,7 @@
 #include <stdio.h>
 extern char buffer[50];
 
-static uint8_t motor_duty = 0;
+
 
 void motor_Init(void){
     GPIO_InitTypeDef GPIO_InitStructure;
@@ -42,17 +42,15 @@ void motor_Init(void){
     TIM_OC2PreloadConfig(TIM4, TIM_OCPreload_Enable);
 
     TIM_Cmd(TIM4, ENABLE);
-
-    motor_duty = 0;
 }
 
-void motor_set_duty(uint8_t duty_percent){
+void motor_set_duty(Motor *motor, uint8_t duty_percent){
     uint32_t pulse;
 
     if (duty_percent > 100)
         duty_percent = 100;
 
-    motor_duty = duty_percent;
+    motor->duty = duty_percent;
 
     pulse = ((1799 + 1) * duty_percent) / 100;
 
@@ -62,18 +60,18 @@ void motor_set_duty(uint8_t duty_percent){
     USART1_send_string(buffer);
 }
 
-void motor_on(void){
-    motor_set_duty(100);     // spec: 85% duty cycle at 50kHz
+void motor_on(Motor *motor){
+    motor_set_duty(motor, 85);     // spec: 85% duty cycle at 50kHz
 }
 
-void motor_off(void){
-    motor_set_duty(0);
+void motor_off(Motor *motor){
+    motor_set_duty(motor, 0);
 }
 
-bool motor_is_on(void){
-    return (motor_duty > 0);
+bool motor_is_on(Motor *motor){
+    return (motor->duty > 0);
 }
 
-uint8_t motor_get_duty(void){
-    return motor_duty;
+uint8_t motor_get_duty(Motor *motor){
+    return motor->duty;
 }

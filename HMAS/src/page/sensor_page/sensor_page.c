@@ -33,7 +33,7 @@ void sensor_page_update(void){
 
 
     // spec: green LED on temp over threshold, red LED on intensity under threshold
-    ObLed obled = compare((int)sensor.temp, (int)sensor.hum);
+    ObLed obled = compare((int)sensor.temp, (int)sensor.ldr);
     obled.led1 ? open_led(led1) : close_led(led1);
     obled.led2 ? open_led(led2) : close_led(led2);
 
