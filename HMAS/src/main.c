@@ -134,8 +134,8 @@ Motor dcmotor = {
 // temp: green LED (PG13) + motor when reading goes ABOVE this
 // ldr:  red   LED (PG14) + motor when reading falls BELOW this
 Threshold threshold = {
-	.temp_threshold = 20,
-	.hum_threshold = 30,
+	.temp_threshold = 30,
+	.hum_threshold = 80,
 	.indecrement = 1
 };
 
@@ -151,9 +151,9 @@ StartDateTime startdatetime = {
 
 // sw420
 Sw420Gpio sw420gpio = {
-	.port  = GPIOD,
-	.pin   = GPIO_Pin_5,
-	.clock = RCC_AHB1Periph_GPIOD,
+	.port  = GPIOB,
+	.pin   = GPIO_Pin_0,
+	.clock = RCC_AHB1Periph_GPIOB,
 	.mode  = GPIO_Mode_IN,
 	.pull  = GPIO_PuPd_NOPULL
 };
@@ -267,15 +267,15 @@ int main(void)
     }
 }
 
-///*
-// * Callback used by stm324xg_eval_i2c_ee.c.
-// * Refer to stm324xg_eval_i2c_ee.h for more info.
-// */
-//uint32_t sEE_TIMEOUT_UserCallback(void)
-//{
-//  /* TODO, implement your code here */
-//  while (1)
-//  {
-//
-//  }
-//}
+/*
+ * Callback used by stm324xg_eval_i2c_ee.c.
+ * Refer to stm324xg_eval_i2c_ee.h for more info.
+ */
+uint32_t sEE_TIMEOUT_UserCallback(void)
+{
+  /* TODO, implement your code here */
+  while (1)
+  {
+
+  }
+}

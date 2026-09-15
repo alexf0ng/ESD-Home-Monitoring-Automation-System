@@ -330,7 +330,7 @@ void ui_SettingPage_screen_init(void)
     lv_obj_set_style_shadow_offset_y(ui_HumThresPanelSt, 8, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     ui_HumThresImageSt = lv_image_create(ui_HumThresPanelSt);
-    lv_image_set_src(ui_HumThresImageSt, &ui_img_humidity_png);
+    lv_image_set_src(ui_HumThresImageSt, &ui_img_intensity_png);
     lv_obj_set_width(ui_HumThresImageSt, LV_SIZE_CONTENT);   /// 1
     lv_obj_set_height(ui_HumThresImageSt, LV_SIZE_CONTENT);    /// 1
     lv_obj_set_x(ui_HumThresImageSt, -112);
@@ -338,7 +338,7 @@ void ui_SettingPage_screen_init(void)
     lv_obj_set_align(ui_HumThresImageSt, LV_ALIGN_CENTER);
     lv_obj_add_flag(ui_HumThresImageSt, LV_OBJ_FLAG_CLICKABLE);     /// Flags
     lv_obj_remove_flag(ui_HumThresImageSt, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
-    lv_image_set_scale(ui_HumThresImageSt, 90);
+    lv_image_set_scale(ui_HumThresImageSt, 255);
 
     ui_HumThresIncSt = lv_label_create(ui_HumThresPanelSt);
     lv_obj_set_width(ui_HumThresIncSt, LV_SIZE_CONTENT);   /// 1

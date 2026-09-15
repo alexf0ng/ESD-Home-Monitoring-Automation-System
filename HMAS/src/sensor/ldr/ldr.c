@@ -51,5 +51,5 @@ float LDR_ReadIntensityPercent(void){
     uint16_t raw = LDR_ReadRaw();
     sprintf(buffer, "ldr raw = %d \r\n", (int)raw);
     USART1_send_string(buffer);
-    return ((float)raw / 4095) * 100;
+    return ((float)raw / 5000) * 100;
 }

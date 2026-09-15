@@ -48,7 +48,7 @@ void sensor_page_update(void){
     USART1_send_string(buffer);
 
     // save to nand flash here
-    NAND_log_add_record((int16_t)sensor.temp, (uint8_t)sensor.hum, (uint16_t)sensor.ldr);
+    NAND_log_add_record((int)sensor.temp, (int)sensor.hum, (int)sensor.ldr);
 
     save_count++;
     sprintf(buffer, "%d", save_count);
