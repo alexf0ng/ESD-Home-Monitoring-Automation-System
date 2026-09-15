@@ -29,6 +29,8 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_it.h"
+#include "lvgl.h"
+#include "usart/usart.h"
 
 /** @addtogroup Template_Project
   * @{
@@ -40,6 +42,11 @@
 /* Private variables ---------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
+
+extern volatile uint32_t button_hold_ms;
+extern volatile bool button_held_5s;
+extern volatile bool button_5s_triggered;
+
 
 /******************************************************************************/
 /*            Cortex-M4 Processor Exceptions Handlers                         */
@@ -138,10 +145,7 @@ void PendSV_Handler(void)
   * @param  None
   * @retval None
   */
-void SysTick_Handler(void)
-{
-/*  TimingDelay_Decrement(); */
-}
+
 
 /******************************************************************************/
 /*                 STM32F4xx Peripherals Interrupt Handlers                   */
@@ -149,7 +153,12 @@ void SysTick_Handler(void)
 /*  available peripheral interrupt handler's name please refer to the startup */
 /*  file (startup_stm32f40xx.s/startup_stm32f427x.s).                         */
 /******************************************************************************/
-
+void TIM3_IRQHandler(void){
+	if(TIM_GetITStatus(TIM3, TIM_IT_Update) == SET){
+		TIM_ClearITPendingBit(TIM3, TIM_IT_Update);
+		lv_tick_inc(1);
+	}
+}
 /**
   * @brief  This function handles PPP interrupt request.
   * @param  None

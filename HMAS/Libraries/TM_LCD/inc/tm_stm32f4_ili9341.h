@@ -241,6 +241,7 @@ void TM_ILI9341_Init(void);
  * @retval None
  */
 void TM_ILI9341_DrawPixel(uint16_t x, uint16_t y, uint32_t color);
+void TM_ILI9341_DrawBuffer(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t *buffer);
 
 /**
  * @brief  Fills entire LCD with color

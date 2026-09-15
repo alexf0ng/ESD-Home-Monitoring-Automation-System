@@ -263,6 +263,19 @@ void TM_ILI9341_DrawPixel(uint16_t x, uint16_t y, uint32_t color) {
 	TM_ILI9341_SendData(color >> 8);
 	TM_ILI9341_SendData(color & 0xFF);
 }
+void TM_ILI9341_DrawBuffer(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t *buffer)
+{
+    uint32_t pixels;
+    TM_ILI9341_SetCursorPosition(x1, y1, x2, y2);
+    TM_ILI9341_SendCommand(ILI9341_GRAM);
+    pixels = (x2 - x1 + 1) * (y2 - y1 + 1);
+    while (pixels--)
+    {
+        TM_ILI9341_SendData(*buffer >> 8);
+        TM_ILI9341_SendData(*buffer & 0xFF);
+        buffer++;
+    }
+}
 
 
 void TM_ILI9341_SetCursorPosition(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2) {

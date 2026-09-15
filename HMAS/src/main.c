@@ -36,159 +36,235 @@ SOFTWARE.
 /* Private function prototypes */
 /* Private functions */
 #include "defines.h"
-#include "tm_stm32f4_ili9341.h"
-#include "tm_stm32f4_fonts.h"
 #include "lvgl.h"
+#include "ui.h"
+#include "string.h"
 
-/**
-**===========================================================================
-**
-**  Abstract: main program
-**
-**===========================================================================
-*/
-#define LCD_WIDTH   320
-#define LCD_HEIGHT  240
+#include <stdbool.h>
+#include <stdio.h>
 
-/* LCD resolution in Landscape */
-#define LCD_WIDTH   320
-#define LCD_HEIGHT  240
+#include "user/user.h"
+#include "usart/usart.h"
+#include "timer/timer.h"
+#include "rtc/rtc.h"
+#include "nand/nand.h"
+#include "rtc/rtc.h"
+#include "btn/btn.h"
+#include "led/led.h"
+#include "sensor/sw420/sw420.h"
+#include "atb3972/atb3972.h"
+#include "motor/motor.h"
+#include "page/page.h"
+#include "page/setting_page/setting_page.h"
+#include "page/password_page/password_page.h"
+#include "page/initialize_page/initialize_page.h"
+char buffer[50];
+// user
+User user;
 
-/* LVGL draw buffer */
-static lv_color_t buf1[LCD_WIDTH * 20];
+Usart1 usart1 = {
+	.port = GPIOA,
+	.tx_pin = GPIO_Pin_9,
+	.rx_pin = GPIO_Pin_10,
+    .tx_source = GPIO_PinSource9,
+	.rx_source = GPIO_PinSource10,
+	.baudrate = 115200
+};
 
-static void my_flush_cb(lv_display_t *display,
-                        const lv_area_t *area,
-                        uint8_t *px_map)
-{
-    /* Cast px_map directly to uint16_t pointers */
-    uint16_t *buf16 = (uint16_t *)px_map;
+// led
+LedGpio ledgpiog13 = {
+	.port = GPIOG,
+	.pin = GPIO_Pin_13,
+	.mode = GPIO_Mode_OUT,
+	.clock = RCC_AHB1Periph_GPIOG,
+	.pull = GPIO_PuPd_UP,
+	.speed = GPIO_Speed_50MHz,
+	.type = GPIO_OType_PP
+};
 
-    for (int32_t y = area->y1; y <= area->y2; y++)
-    {
-        for (int32_t x = area->x1; x <= area->x2; x++)
-        {
-            TM_ILI9341_DrawPixel(x, y, *buf16);
-            buf16++;
-        }
-    }
+LedGpio ledgpiog14 = {
+	.port = GPIOG,
+	.pin = GPIO_Pin_14,
+	.mode = GPIO_Mode_OUT,
+	.clock = RCC_AHB1Periph_GPIOG,
+	.pull = GPIO_PuPd_UP,
+	.speed = GPIO_Speed_50MHz,
+	.type = GPIO_OType_PP
+};
 
-    lv_display_flush_ready(display);
+
+// button
+BtnGpio btngpioc5 = {
+    .port = GPIOC,
+    .pin = GPIO_Pin_5,
+    .mode = GPIO_Mode_IN,
+    .clock = RCC_AHB1Periph_GPIOC,
+    .pull = GPIO_PuPd_NOPULL
+};
+
+// timer for lvgl
+Timer timer3 = {
+    .timer = TIM3,
+    .timer_clock = RCC_APB1Periph_TIM3,
+	// 90mhz / 900 = 100000 tick per sec
+	// so 1 tick is 1/100000 = 1x10^-5
+	// then we set period to 100 becase 1x10^-5 x100 = 1ms
+    .prescaler = 899, // got + 1 here
+    .period = 99, // got +1 here
+    .irq_channel = TIM3_IRQn,
+    .preemption_priority = 0,
+    .sub_priority = 0,
+	.enable_interrupt = true
+};
+
+// timer by dht22, it use tim2 go and see the source file
+Timer timer2 = {
+	.timer = TIM2,
+	.timer_clock = RCC_APB1Periph_TIM2,
+	.prescaler = (uint16_t) (90000000 / 1000000) - 1,
+	.period = 65535 - 1,
+	.enable_interrupt = false
+};
+
+Motor dcmotor = {
+	.duty = 0
+};
+
+// threshold
+// temp: green LED (PG13) + motor when reading goes ABOVE this
+// ldr:  red   LED (PG14) + motor when reading falls BELOW this
+Threshold threshold = {
+	.temp_threshold = 30,
+	.hum_threshold = 80,
+	.indecrement = 1
+};
+
+// rtc
+StartDateTime startdatetime = {
+	.year = 26,
+    .month = 9,
+    .day = 8,
+	.hour = 22,
+	.minute = 54,
+	.second = 0
+};
+
+// sw420
+Sw420Gpio sw420gpio = {
+	.port  = GPIOB,
+	.pin   = GPIO_Pin_0,
+	.clock = RCC_AHB1Periph_GPIOB,
+	.mode  = GPIO_Mode_IN,
+	.pull  = GPIO_PuPd_NOPULL
+};
+
+// the siren analog test board - CONFIRMED WORKING with these values
+Atb3972 atb3972 = {
+	.clock_gpio = RCC_AHB1Periph_GPIOA,
+	.clock_dac  = RCC_APB1Periph_DAC,
+	.clock_tim  = RCC_APB1Periph_TIM6,
+	.pin        = GPIO_Pin_5,
+	.mode       = GPIO_Mode_AN,
+	.pull       = GPIO_PuPd_NOPULL,
+	.port       = GPIOA,
+	.tim               = TIM6,
+	.tim_period        = 13,
+	.tim_prescaler     = 0,
+	.tim_clockdivision = 0,
+	.tim_countermode   = TIM_CounterMode_Up,
+	.dac_channel            = DAC_Channel_2,
+	.dac_trigger            = DAC_Trigger_T6_TRGO,
+	.dac_wave               = DAC_WaveGeneration_Triangle,
+	.dac_triangle_amplitude = DAC_TriangleAmplitude_4095,
+	.dac_outputbuffer       = DAC_OutputBuffer_Enable
+};
+
+static void print_rtc_time(lv_timer_t *timer){
+	char timeStr[24];
+	RTC_get_date_time_str(timeStr);
+	sprintf(buffer, "%s\r\n", timeStr);
+	USART1_send_string(buffer);
 }
+
 int main(void)
 {
+	// usart initialize
+	USART1_init(&usart1);
+	USART1_send_string("Initializing...\r\n");
+	USART1_send_string("Usart Initialize Success!\r\n");
 
-	 /* =========================================================
-	     * 1. Initialize ILI9341
-	     * ========================================================= */
-	    TM_ILI9341_Init();
+	// user initialize
+	user_init(&user);
+	USART1_send_string("User Initialize Success!\r\n");
 
-	    TM_ILI9341_Rotate(TM_ILI9341_Orientation_Landscape_1);
+	// lcd screen init
+	TM_ILI9341_Init();
+	USART1_send_string("LCD Initialize Success!\r\n");
 
+	// lvgl init
+	lv_init();
+	USART1_send_string("LVGL Initialize Success!\r\n");
 
-	    /* =========================================================
-	     * 2. Initialize LVGL
-	     * ========================================================= */
-	    lv_init();
+	// ext button init
+	extbtn_Init(&btngpioc5);
 
+	// led init
+	led_Init(&ledgpiog13);
+	led_Init(&ledgpiog14);
 
-	    /* =========================================================
-	     * 3. Create LVGL display
-	     * ========================================================= */
-	    lv_display_t *display = lv_display_create(
-	        LCD_WIDTH,
-	        LCD_HEIGHT
-	    );
+	USART1_send_string("GPIO Initialize Success!\r\n");
 
+	// timer and interrupt init
+	timer_init(&timer3);
+	timer_NVIC_init(&timer3);
+	timer_init(&timer2);
+	TIM_Cmd(timer3.timer, ENABLE);
+	TIM_Cmd(timer2.timer, ENABLE);
+	USART1_send_string("Timer Initialize Success!\r\n");
 
-	    /* =========================================================
-	     * 4. Give LVGL a drawing buffer
-	     * ========================================================= */
-	    lv_display_set_buffers(
-	        display,
-	        buf1,
-	        NULL,
-	        sizeof(buf1),
-	        LV_DISPLAY_RENDER_MODE_PARTIAL
-	    );
+	// dc motor pwm init - needs timer4 time base up first
+	motor_Init();
+	USART1_send_string("Motor Initialize Success!\r\n");
 
+	// touch screen
+	TM_STMPE811_Init();
+	USART1_send_string("TMSTMPE811 Initialize Success!\r\n");
 
-	    /* =========================================================
-	     * 5. Tell LVGL how to send pixels to ILI9341
-	     * ========================================================= */
-	    lv_display_set_flush_cb(
-	        display,
-	        my_flush_cb
-	    );
+	// dht22 ldr init
+	DHT22_Init();
+	LDR_Init();
+	USART1_send_string("DHT22 Initialize Success!\r\n");
 
+	// threshold value init
+	temp_hum_threshold_init(threshold);
+	// rtc init
+	RTC_Config_Init(startdatetime);
+	// nand init
+	NAND_Init();
 
-	    /* =========================================================
-	     * 6. Create UI
-	     * ========================================================= */
+	// sensor page init
+	sensor_page_init(&ledgpiog13, &ledgpiog14, &dcmotor);
 
-	    lv_obj_t *screen = lv_screen_active();
+	atb_Init(&atb3972);
+	USART1_send_string("ATB Init done\r\n");
 
-	    /* Background */
-	    lv_obj_set_style_bg_color(
-	        screen,
-	        lv_color_hex(0x101820),
-	        LV_PART_MAIN
-	    );
+	// sw420 init
+	sw420_Init(&sw420gpio);
 
+    USART1_send_string("Initialization Finish!\r\n");
+    screen_init();
 
-	    /* Title */
-	    lv_obj_t *title = lv_label_create(screen);
+    ui_init();
+    lv_timer_create(print_rtc_time, 1000, NULL);
 
-	    lv_label_set_text(
-	        title,
-	        "Welcome to my SmartBox"
-	    );
+    splash_and_jump();
 
-	    lv_obj_set_style_text_color(
-	        title,
-	        lv_color_hex(0xFFFFFF),
-	        LV_PART_MAIN
-	    );
+    password_page_reset_listen(&btngpioc5);
+    sw420_listen(&sw420gpio, &atb3972);   // registers the motion-polling timer + wires it to the tone
 
-	    lv_obj_align(
-	        title,
-	        LV_ALIGN_CENTER,
-	        0,
-	        -30
-	    );
-
-
-	    /* Subtitle */
-	    lv_obj_t *subtitle = lv_label_create(screen);
-
-	    lv_label_set_text(
-	        subtitle,
-	        "Initializing..."
-	    );
-
-	    lv_obj_set_style_text_color(
-	        subtitle,
-	        lv_color_hex(0xAAAAAA),
-	        LV_PART_MAIN
-	    );
-
-	    lv_obj_align(
-	        subtitle,
-	        LV_ALIGN_CENTER,
-	        0,
-	        10
-	    );
-
-
-	    /* =========================================================
-	     * 7. LVGL main loop
-	     * ========================================================= */
-	    while (1)
-	    {
-	        lv_timer_handler();
-	    }
-
-
+    while (1) {
+		lv_timer_handler();
+    }
 }
 
 /*
@@ -200,5 +276,6 @@ uint32_t sEE_TIMEOUT_UserCallback(void)
   /* TODO, implement your code here */
   while (1)
   {
+
   }
 }
